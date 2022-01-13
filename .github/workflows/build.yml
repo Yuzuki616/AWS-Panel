@@ -1,0 +1,75 @@
+name: build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/*.yml"
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+    paths:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+      - ".github/workflows/*.yml"
+  release:
+    types: [ published ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: 17
+          cache: 'npm'
+          cache-dependency-path: 'web/package-lock.json'
+      - name: Build web
+        run: |
+          export NODE_OPTIONS=--openssl-legacy-provider
+          mkdir tmp/
+          cd web/
+          npm ci
+          npm run build
+          mv dist/ ../tmp/web
+          cd ..
+      - name: Build with xgo
+        uses: crazy-max/ghaction-xgo@v1
+        with:
+          xgo_version: latest
+          go_version: latest
+          dest: build
+          prefix: AWS-Panel
+          targets: windows/386,windows/amd64,linux/386,linux/amd64
+          v: true
+          x: false
+          race: false
+          ldflags: -s -w --extldflags "-static -fpic"
+          buildmode: default
+      - name: Zip
+        run: |
+          mkdir output/
+          cd tmp/
+          for i in `ls ../build`; do mv ../build/$i ./; zip -r $i.zip *; mv $i.zip ../output/; rm -rf $i; done
+          cd ..
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        if: ${{ !github.head_ref }}
+        with:
+          name: AWS-Panel_ALL
+          path: output/
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        if: github.event_name == 'release'
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: output/*
+          tag: ${{ github.ref }}
+          file_glob: true
