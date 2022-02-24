@@ -18,12 +18,12 @@ func New() *Router {
 }
 
 func (p *Router) LoadRoute() {
-	store := cookie.NewStore([]byte("loginuser"))
+	store := cookie.NewStore([]byte("loginSession"))
 	/*store, err := redis.NewStore(10, "tcp", "127.0.0.1:6379", "", []byte("loginuser"))
 	if err != nil {
 		log.Error("Create session error: ", err)
 	}*/
-	p.router.Use(sessions.Sessions("usersession", store))
+	p.router.Use(sessions.Sessions("loginSession", store))
 	config := cors.DefaultConfig()
 	config.AllowOrigins = []string{"http://127.0.0.1:8080"}
 	config.AllowCredentials = true
@@ -32,9 +32,16 @@ func (p *Router) LoadRoute() {
 	//User
 	p.router.POST("/api/v1/User/Login", controller.LoginVerify)
 	p.router.POST("/api/v1/User/Register", controller.Register)
+	p.router.POST("/api/v1/User/ChangeUsername", controller.ChangeUsername)
 	p.router.POST("/api/v1/User/ChangePassword", controller.ChangePassword)
 	p.router.GET("/api/v1/User/Info", controller.GetUserInfo)
 	p.router.GET("/api/v1/User/Logout", controller.Logout)
+	p.router.GET("/api/v1/User/IsAdmin", controller.IsAdmin)
+	//Admin Only
+	p.router.GET("/api/v1/User/List", controller.GetUserList)
+	p.router.POST("/api/v1/User/Delete", controller.DeleteUser)
+	p.router.POST("/api/v1/User/Ban", controller.BanUser)
+	p.router.POST("/api/v1/User/UnBan", controller.UnBanUser)
 
 	//Secret
 	p.router.POST("/api/v1/Secret/Add", controller.AddSecret)

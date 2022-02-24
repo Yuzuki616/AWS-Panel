@@ -222,7 +222,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import axios from '../api'
 
 export default {
   name: 'user',
@@ -280,11 +280,13 @@ export default {
       this.secretsLoading = true
       axios.get('/api/v1/Secret/List', {withCredentials: true}).then(response => {
         let tmp = []
-        for (const v of response.data.data) {
-          tmp.push({
-            name: v.name,
-            id: v.id,
-            secret: v.secret
+        if (response.data.data!=null){
+          response.data.data.forEach(v=>{
+            tmp.push({
+              name: v.name,
+              id: v.id,
+              secret: v.secret
+            })
           })
         }
         this.secrets = tmp

@@ -60,7 +60,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import axios from "../api";
 
 export default {
   name: "login",
@@ -91,6 +91,9 @@ export default {
         axios.post("/api/v1/User/Login",
             data, {withCredentials: true}).then((response) => {
           if (response.data.code === 200) {
+            if (response.data.isAdmin) {
+              this.$cookie.set('isAdmin', 'true')
+            }
             this.text = "登陆成功，即将跳转到主页..."
             setTimeout(() => {
               this.$router.push("/")
@@ -100,7 +103,6 @@ export default {
           }
         }).catch((error) => {
           console.error(error)
-          this.loading = false
         }).finally(() => {
           this.snackbar = true
           this.loading = false

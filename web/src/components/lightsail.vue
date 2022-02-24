@@ -228,12 +228,13 @@ import axios from "axios"
 
 export default {
   name: 'lightsail',
-  props: ['secretName', 'loading', 'message', 'messageText'],
+  props: ['loading', 'message', 'messageText'],
   data() {
     return {
       formRequired: [
         v => !!v || "必填项！"
       ],
+      secretName:'',
       createDialog: false,
       sshKeyDialog: false,
       sshKey: "",

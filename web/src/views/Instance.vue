@@ -233,7 +233,6 @@
         <v-col cols="12">
           <lightsail
               ref="lightsail"
-              :secretName="secretSelected"
               :loading="loading"
               :message="message"
               :messageText="messageText"
@@ -267,7 +266,7 @@
 </template>
 
 <script>
-import axios from "axios"
+import axios from "../api"
 import Lightsail from "../components/lightsail";
 
 export default {
@@ -353,14 +352,18 @@ export default {
   mounted() {
     axios.get("/api/v1/Secret/List", {withCredentials: true}).then(response => {
       let tmp = []
-      for (const v of response.data.data) {
+      if (response.data.code === 200) {
+        for (const v of response.data.data) {
         tmp.push({
           text: v.name,
           id: v.id,
           secret: v.secret
         })
       }
-      this.secrets = tmp
+        this.secrets = tmp
+      }else{
+        console.error("load secret error: ",response.data.msg)
+      }
     })
   },
   methods:
@@ -469,10 +472,10 @@ export default {
                 this.refresh()
               } else {
                 this.messageText = response.data.msg
+                this.message = true
               }
             }).finally(() => {
               this.loading = false
-              this.message = true
             })
           }
         },
@@ -489,10 +492,10 @@ export default {
               this.refresh()
             } else {
               this.messageText = response.data.msg
+              this.message = true
             }
           }).finally(() => {
             this.loading = false
-            this.message = true
           })
           }
         },
@@ -509,10 +512,10 @@ export default {
                 this.refresh()
               } else {
                 this.messageText = response.data.msg
+                this.message = true
               }
             }).finally(() => {
               this.loading = false
-              this.message = true
             })
           }
         },

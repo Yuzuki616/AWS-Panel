@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/yuzuki999/Aws-Panel/aws"
 	"github.com/yuzuki999/Aws-Panel/data"
@@ -9,7 +8,7 @@ import (
 )
 
 func CreateEc2(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -19,7 +18,7 @@ func CreateEc2(c *gin.Context) {
 	ec2Type := c.PostForm("ec2Type")
 	ec2Name := c.PostForm("ec2Name")
 	if secretName == "" || region == "" || ami == "" || ec2Type == "" || ec2Name == "" {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  "信息填写不完整",
 		})
@@ -28,7 +27,7 @@ func CreateEc2(c *gin.Context) {
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  newErr.Error(),
 		})
@@ -36,14 +35,14 @@ func CreateEc2(c *gin.Context) {
 	}
 	amiTmp, amiErr := client.GetAmiId(ami)
 	if amiErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  amiErr.Error(),
 		})
 		return
 	}
 	if amiTmp == "" {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  "Get ami ID error: Not found ami",
 		})
@@ -51,7 +50,7 @@ func CreateEc2(c *gin.Context) {
 	}
 	creRt, creErr := client.CreateEc2(amiTmp, ec2Type, ec2Name, disk)
 	if creErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  creErr.Error(),
 		})
@@ -65,14 +64,14 @@ func CreateEc2(c *gin.Context) {
 }
 
 func ListEc2(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	if username == "" {
 		return
 	}
 	secretName := c.PostForm("secretName")
 	region := c.PostForm("region")
 	if secretName == "" || region == "" {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  "信息填写不完整",
 		})
@@ -80,7 +79,7 @@ func ListEc2(c *gin.Context) {
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  newErr.Error(),
 		})
@@ -88,7 +87,7 @@ func ListEc2(c *gin.Context) {
 	}
 	ec2Info, listErr := client.ListEc2()
 	if listErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  listErr.Error(),
 		})
@@ -98,13 +97,13 @@ func ListEc2(c *gin.Context) {
 	if ec2Info == nil {
 		ec2Instances = nil
 	} else {
-		for _, v := range ec2Info {
+		for i := range ec2Info {
 			ec2Instances = append(ec2Instances, &aws.Ec2Info{
-				Name:       aws.CheckNameNil(v.Instances[0].Tags),
-				Status:     v.Instances[0].State.Name,
-				Type:       v.Instances[0].InstanceType,
-				InstanceId: v.Instances[0].InstanceId,
-				Ip:         v.Instances[0].PublicIpAddress,
+				Name:       aws.CheckNameNil(ec2Info[i].Instances[0].Tags),
+				Status:     ec2Info[i].Instances[0].State.Name,
+				Type:       ec2Info[i].Instances[0].InstanceType,
+				InstanceId: ec2Info[i].Instances[0].InstanceId,
+				Ip:         ec2Info[i].Instances[0].PublicIpAddress,
 			})
 		}
 	}
@@ -115,7 +114,7 @@ func ListEc2(c *gin.Context) {
 }
 
 func GetEc2Info(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -123,7 +122,7 @@ func GetEc2Info(c *gin.Context) {
 	region := c.PostForm("region")
 	ec2Id := c.PostForm("ec2Id")
 	if secretName == "" || region == "" || ec2Id == "" {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  "信息填写不完整",
 		})
@@ -131,7 +130,7 @@ func GetEc2Info(c *gin.Context) {
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  newErr.Error(),
 		})
@@ -139,7 +138,7 @@ func GetEc2Info(c *gin.Context) {
 	}
 	ec2Info, getErr := client.GetEc2Info(ec2Id)
 	if getErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  getErr.Error(),
 		})
@@ -152,7 +151,7 @@ func GetEc2Info(c *gin.Context) {
 }
 
 func ChangeEc2Ip(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -160,7 +159,7 @@ func ChangeEc2Ip(c *gin.Context) {
 	region := c.PostForm("region")
 	ec2Id := c.PostForm("ec2Id")
 	if secretName == "" || region == "" || ec2Id == "" {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  "信息填写不完整",
 		})
@@ -168,7 +167,7 @@ func ChangeEc2Ip(c *gin.Context) {
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  newErr.Error(),
 		})
@@ -176,7 +175,7 @@ func ChangeEc2Ip(c *gin.Context) {
 	}
 	newIp, changeErr := client.ChangeEc2Ip(ec2Id)
 	if changeErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  changeErr.Error(),
 		})
@@ -190,7 +189,7 @@ func ChangeEc2Ip(c *gin.Context) {
 }
 
 func StopEc2(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -198,7 +197,7 @@ func StopEc2(c *gin.Context) {
 	region := c.PostForm("region")
 	ec2Id := c.PostForm("ec2Id")
 	if secretName == "" || region == "" || ec2Id == "" {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  "信息填写不完整",
 		})
@@ -206,7 +205,7 @@ func StopEc2(c *gin.Context) {
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  newErr.Error(),
 		})
@@ -214,7 +213,7 @@ func StopEc2(c *gin.Context) {
 	}
 	stopErr := client.StopEc2(ec2Id)
 	if stopErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  stopErr.Error(),
 		})
@@ -227,7 +226,7 @@ func StopEc2(c *gin.Context) {
 }
 
 func StartEc2(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -235,7 +234,7 @@ func StartEc2(c *gin.Context) {
 	region := c.PostForm("region")
 	ec2Id := c.PostForm("ec2Id")
 	if secretName == "" || region == "" || ec2Id == "" {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  "信息填写不完整",
 		})
@@ -243,7 +242,7 @@ func StartEc2(c *gin.Context) {
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  newErr.Error(),
 		})
@@ -255,7 +254,7 @@ func StartEc2(c *gin.Context) {
 			"msg":  "启动成功",
 		})
 	} else {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  startErr.Error(),
 		})
@@ -263,7 +262,7 @@ func StartEc2(c *gin.Context) {
 }
 
 func RebootEc2(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -271,7 +270,7 @@ func RebootEc2(c *gin.Context) {
 	region := c.PostForm("region")
 	ec2Id := c.PostForm("ec2Id")
 	if secretName == "" || region == "" || ec2Id == "" {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  "信息填写不完整",
 		})
@@ -279,7 +278,7 @@ func RebootEc2(c *gin.Context) {
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  newErr.Error(),
 		})
@@ -291,7 +290,7 @@ func RebootEc2(c *gin.Context) {
 			"msg":  "重启成功",
 		})
 	} else {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  rebootErr.Error(),
 		})
@@ -299,7 +298,7 @@ func RebootEc2(c *gin.Context) {
 }
 
 func DeleteEc2(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -307,7 +306,7 @@ func DeleteEc2(c *gin.Context) {
 	region := c.PostForm("region")
 	ec2Id := c.PostForm("ec2Id")
 	if secretName == "" || region == "" || ec2Id == "" {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  "信息填写不完整",
 		})
@@ -315,7 +314,7 @@ func DeleteEc2(c *gin.Context) {
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  newErr.Error(),
 		})
@@ -327,10 +326,9 @@ func DeleteEc2(c *gin.Context) {
 			"msg":  "删除成功",
 		})
 	} else {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  delErr.Error(),
 		})
-		fmt.Println("test")
 	}
 }

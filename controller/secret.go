@@ -6,7 +6,7 @@ import (
 )
 
 func AddSecret(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	name := c.PostForm("name")
 	id := c.PostForm("id")
 	secret := c.PostForm("secret")
@@ -35,7 +35,7 @@ func AddSecret(c *gin.Context) {
 }
 
 func ListSecret(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -58,7 +58,7 @@ func ListSecret(c *gin.Context) {
 }
 
 func GetSecretInfo(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -77,7 +77,7 @@ func GetSecretInfo(c *gin.Context) {
 			"data": secret,
 		})
 	} else {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  getErr.Error(),
 		})
@@ -85,7 +85,7 @@ func GetSecretInfo(c *gin.Context) {
 }
 
 func DelSecret(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	if username == "" {
 		return
 	}

@@ -7,7 +7,7 @@ import (
 )
 
 func CreateLightsail(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -19,7 +19,7 @@ func CreateLightsail(c *gin.Context) {
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New("ap-northeast-1", secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  newErr.Error(),
 		})
@@ -32,7 +32,7 @@ func CreateLightsail(c *gin.Context) {
 			"msg":  "创建成功",
 		})
 	} else {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  createErr.Error(),
 			"data": *createRt.Key,
@@ -41,7 +41,7 @@ func CreateLightsail(c *gin.Context) {
 }
 
 func ListLightsail(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -49,7 +49,7 @@ func ListLightsail(c *gin.Context) {
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New("ap-northeast-1", secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  newErr.Error(),
 		})
@@ -57,7 +57,7 @@ func ListLightsail(c *gin.Context) {
 	}
 	listRt, listErr := client.ListLs()
 	if listErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  listErr.Error(),
 		})
@@ -84,7 +84,7 @@ func ListLightsail(c *gin.Context) {
 }
 
 func GetLightsailInfo(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -93,7 +93,7 @@ func GetLightsailInfo(c *gin.Context) {
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New("ap-northeast-1", secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  newErr.Error(),
 		})
@@ -107,7 +107,7 @@ func GetLightsailInfo(c *gin.Context) {
 			"data": info,
 		})
 	} else {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  GetInfoErr.Error(),
 		})
@@ -115,7 +115,7 @@ func GetLightsailInfo(c *gin.Context) {
 }
 
 func StartLightsail(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -137,7 +137,7 @@ func StartLightsail(c *gin.Context) {
 			"msg":  "启动成功",
 		})
 	} else {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  startErr.Error(),
 		})
@@ -145,7 +145,7 @@ func StartLightsail(c *gin.Context) {
 }
 
 func StopLightsail(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -154,7 +154,7 @@ func StopLightsail(c *gin.Context) {
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New("ap-northeast-1", secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  newErr.Error(),
 		})
@@ -167,7 +167,7 @@ func StopLightsail(c *gin.Context) {
 			"msg":  "停止成功",
 		})
 	} else {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  stopErr.Error(),
 		})
@@ -175,7 +175,7 @@ func StopLightsail(c *gin.Context) {
 }
 
 func RebootLightsail(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -197,7 +197,7 @@ func RebootLightsail(c *gin.Context) {
 			"msg":  "停止成功",
 		})
 	} else {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  stopErr.Error(),
 		})
@@ -205,7 +205,7 @@ func RebootLightsail(c *gin.Context) {
 }
 
 func ChangeLightsailIp(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -214,7 +214,7 @@ func ChangeLightsailIp(c *gin.Context) {
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New("ap-northeast-1", secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  newErr.Error(),
 		})
@@ -235,7 +235,7 @@ func ChangeLightsailIp(c *gin.Context) {
 }
 
 func DeleteLightsail(c *gin.Context) {
-	username := SessionCheck(c)
+	username := GetLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -244,7 +244,7 @@ func DeleteLightsail(c *gin.Context) {
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New("ap-northeast-1", secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  newErr.Error(),
 		})
@@ -257,7 +257,7 @@ func DeleteLightsail(c *gin.Context) {
 			"msg":  "删除成功",
 		})
 	} else {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  startErr.Error(),
 		})

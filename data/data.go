@@ -17,5 +17,6 @@ func DbInit(path string) error {
 		return err
 	}
 	Db = db
+	CreateAdminUser()
 	return nil
 }

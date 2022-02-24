@@ -6,8 +6,7 @@ import vueMeta from 'vue-meta'
 import VueCookie from 'vue-cookie'
 
 //const VueCookie = require('')
-Vue.use(VueCookie)
-Vue.use(vueMeta)
+Vue.use(VueCookie,vueMeta)
 Vue.config.productionTip = false
 new Vue({
     vuetify,

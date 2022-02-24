@@ -6,6 +6,7 @@ import Register from "@/views/Register"
 import Instance from '@/views/Instance'
 import Quota from '@/views/Quota'
 import User from '@/views/User'
+import Manger from '@/views/Manger'
 
 Vue.use(VueRouter)
 
@@ -48,6 +49,14 @@ const routes = [
         meta: {
             needLogin: true
         }
+    },
+    {
+        path: '/Manger',
+        name: 'Manger',
+        component: Manger,
+        meta: {
+            needLogin: true
+        }
     }
 ]
 
@@ -64,7 +73,7 @@ function CheckCookie(name) {
 
 router.beforeEach((to, from, next) => {
     if (to.meta.needLogin) {
-        if (CheckCookie("usersession")) {
+        if (CheckCookie("loginSession")) {
             next()
         } else {
             next({
