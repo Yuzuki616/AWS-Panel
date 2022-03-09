@@ -2,7 +2,7 @@
 
 一个可以管理AWS资源的Web面板
 
-[![](https://img.shields.io/github/license/mytest/AWS-Panel?style=for-the-badge)](https://www.gnu.org/licenses/gpl-3.0.html)
+[![](https://img.shields.io/github/license/Yuzuki999/AWS-Panel?style=for-the-badge)](https://www.gnu.org/licenses/gpl-3.0.html)
 
 暂时未实现用户权限及用户管理，为避免风险，建议仅在本地使用
 
