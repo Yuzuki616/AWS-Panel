@@ -285,17 +285,21 @@ export default {
     //secretsLoading: false,
     tableLoading: false,
     regions: [
+      {text: '弗吉尼亚北部', value: 'us-east-1'},
+      {text: '俄亥俄', value: 'us-east-2'},
+      {text: '加利福尼亚北部', value: 'us-west-1'},
+      {text: '俄勒冈', value: 'us-west-2'},
+      {text: "香港", value: "ap-east-1"},
       {text: '日本', value: 'ap-northeast-1'},
+      {text: "大阪", value: "ap-northeast-3"},
       {text: '韩国', value: 'ap-northeast-2'},
-      {text: '美国东部', value: 'us-east-2'},
-      {text: '美国西部', value: 'us-west-1'},
-      {text: '美国中部', value: 'us-west-2'},
       {text: '加拿大', value: 'ca-central-1'},
       {text: '墨西哥', value: 'us-east-3'},
       {text: '澳大利亚', value: 'ap-southeast-6'},
       {text: '新加坡', value: 'ap-southeast-1'},
       {text: '澳洲', value: 'ap-southeast-2'},
       {text: '法国', value: 'eu-central-1'},
+      {text: '冰岛', value: 'eu-west-1'},
       {text: '德国', value: 'eu-west-2'},
       {text: '俄罗斯', value: 'eu-west-3'},
       {text: '印度', value: 'ap-south-1'},
@@ -330,7 +334,7 @@ export default {
     ami: [
       {text: 'Debian10', value: 'debian-10-amd64-20210329-591'},
       {text: 'Ubuntu20.04', value: 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210430'},
-      {text: 'Redhat', value: 'RHEL_HA-8.4.0_HVM-20210504-x86_64-2-Hourly2-GP2'}
+      {text: 'Redhat8', value: 'RHEL_HA-8.4.0_HVM-20210504-x86_64-2-Hourly2-GP2'}
     ],
     amiSelected: '',
     disk: [
@@ -354,23 +358,23 @@ export default {
       let tmp = []
       if (response.data.code === 200) {
         for (const v of response.data.data) {
-        tmp.push({
-          text: v.name,
-          id: v.id,
-          secret: v.secret
-        })
-      }
+          tmp.push({
+            text: v.name,
+            id: v.id,
+            secret: v.secret
+          })
+        }
         this.secrets = tmp
-      }else{
-        console.error("load secret error: ",response.data.msg)
+      } else {
+        console.error("load secret error: ", response.data.msg)
       }
     })
   },
   methods:
       {
-        secretSelect(){
+        secretSelect() {
           this.refresh()
-          this.$refs.lightsail.$emit("secretSelect",this.secretSelected)
+          this.$refs.lightsail.$emit("secretSelect", this.secretSelected)
         },
         createCheck() {
           if ((this.regionSelected === '') && (this.secretSelected === '')) {
@@ -389,9 +393,9 @@ export default {
             data.append("secretName", this.secretSelected)
             axios.post('/api/v1/Ec2/List', data, {withCredentials: true}).then(response => {
               if (response.data.code === 200) {
-                if (response.data.data==null){
+                if (response.data.data == null) {
                   this.Instances = []
-                }else{
+                } else {
                   this.Instances = response.data.data
                 }
               } else {
@@ -417,29 +421,29 @@ export default {
             axios.post("/api/v1/Ec2/Create", data, {withCredentials: true}).then(response => {
               if (response.data.code === 200) {
                 this.messageText = '已添加至创建队列！'
-                this.sshKey=response.data.data
+                this.sshKey = response.data.data
               } else {
                 this.messageText = response.data.msg
               }
             }).finally(() => {
               this.$refs.createForm.reset()
               this.loading = false
-              this.sshKeyDialog=true
+              this.sshKeyDialog = true
               this.message = true
             })
           }
         },
-        copySshKey(){
+        copySshKey() {
           this.sshKeyDialog = false
           navigator.clipboard.writeText(this.sshKey).then(() => {
             this.messageText = '已复制到剪贴板'
             this.message = true
-            this.sshKey=''
+            this.sshKey = ''
             this.refresh()
           })
         },
         startInstance(item) {
-          if (item.Status!=='') {
+          if (item.Status !== '') {
             this.loading = true
             let data = new FormData()
             data.append("region", this.regionSelected)
@@ -460,7 +464,7 @@ export default {
           }
         },
         stopInstance(item) {
-          if (item.Status!==''){
+          if (item.Status !== '') {
             this.loading = true
             let data = new FormData()
             data.append("region", this.regionSelected)
@@ -480,27 +484,27 @@ export default {
           }
         },
         restartInstance(item) {
-          if (item.Status!==''){
-          this.loading = true
-          let data = new FormData()
-          data.append("region", this.regionSelected)
-          data.append("secretName", this.secretSelected)
-          data.append("ec2Id", item.InstanceId)
-          axios.post("/api/v1/Ec2/Reboot", data, {withCredentials: true}).then(response => {
-            if (response.data.code === 200) {
-              this.messageText = '已添加至重启队列！'
-              this.refresh()
-            } else {
-              this.messageText = response.data.msg
-              this.message = true
-            }
-          }).finally(() => {
-            this.loading = false
-          })
+          if (item.Status !== '') {
+            this.loading = true
+            let data = new FormData()
+            data.append("region", this.regionSelected)
+            data.append("secretName", this.secretSelected)
+            data.append("ec2Id", item.InstanceId)
+            axios.post("/api/v1/Ec2/Reboot", data, {withCredentials: true}).then(response => {
+              if (response.data.code === 200) {
+                this.messageText = '已添加至重启队列！'
+                this.refresh()
+              } else {
+                this.messageText = response.data.msg
+                this.message = true
+              }
+            }).finally(() => {
+              this.loading = false
+            })
           }
         },
         deleteInstance(item) {
-          if (item.Status!=='') {
+          if (item.Status !== '') {
             this.loading = true
             let data = new FormData()
             data.append("region", this.regionSelected)
