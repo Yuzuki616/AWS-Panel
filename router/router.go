@@ -32,6 +32,7 @@ func (p *Router) LoadRoute() {
 	//User
 	p.router.POST("/api/v1/User/Login", controller.LoginVerify)
 	p.router.POST("/api/v1/User/Register", controller.Register)
+	p.router.POST("/api/v1/user/SendMail", controller.SendMail)
 	p.router.POST("/api/v1/User/ChangeUsername", controller.ChangeUsername)
 	p.router.POST("/api/v1/User/ChangePassword", controller.ChangePassword)
 	p.router.GET("/api/v1/User/Info", controller.GetUserInfo)

@@ -1,0 +1,5 @@
+package mail
+
+func SendMail() {
+
+}
