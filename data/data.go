@@ -1,6 +1,8 @@
 package data
 
 import (
+	"AWS-Panel/utils"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -12,11 +14,15 @@ func DbInit(path string) error {
 	if openErr != nil {
 		return openErr
 	}
-	err := db.AutoMigrate(UserData{}, AwsSecret{})
-	if err != nil {
-		return err
-	}
 	Db = db
-	CreateAdminUser()
+	if utils.IsNotFound(path) {
+		log.Info("Init database")
+		err := db.AutoMigrate(UserData{}, AwsSecret{})
+		if err != nil {
+			return err
+		}
+		CreateAdminUser()
+		log.Info("Default account: admin password: admin123456")
+	}
 	return nil
 }
