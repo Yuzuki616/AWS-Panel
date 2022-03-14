@@ -1,8 +1,8 @@
 package data
 
 import (
-	"AWS-Panel/utils"
 	log "github.com/sirupsen/logrus"
+	"github.com/yuzuki999/Aws-Panel/utils"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
