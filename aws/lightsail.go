@@ -1,10 +1,10 @@
 package aws
 
 import (
-	"time"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/lightsail"
+	log "github.com/sirupsen/logrus"
+	"strconv"
 )
 
 type LsInfo struct {
@@ -25,45 +25,50 @@ func (p *Aws) GetBlueprintId() (*lightsail.GetBlueprintsOutput, error) {
 	return blueID, nil
 }
 
-func (p *Aws) CreateLs(Name string, Zone string, BlueprintId string, BundleId string) (*LsInfo, error) {
+func (p *Aws) CreateLs(Name string, Zone string, BlueprintId string, BundleId string, Quantity string) (*LsInfo, error) {
 	svc := lightsail.New(p.Sess)
-	dateName := Name + time.Unix(time.Now().Unix(), 0).Format("_2006_01_02_15_04_05")
-	key, keyErr := svc.CreateKeyPair(&lightsail.CreateKeyPairInput{KeyPairName: aws.String(dateName)})
-	if keyErr != nil {
-		return nil, keyErr
+	named := []*string{aws.String(Name)}
+	quantity, err := strconv.Atoi(Quantity)
+	if err == nil {
+		for quantity > 1 {
+			quantity -= 1
+			named = append(named, aws.String(Name+"_"+strconv.Itoa(quantity)))
+		}
 	}
+
 	lsRt, lsErr := svc.CreateInstances(&lightsail.CreateInstancesInput{
 		AvailabilityZone: aws.String(Zone),
 		BlueprintId:      aws.String(BlueprintId),
 		BundleId:         aws.String(BundleId),
-		InstanceNames:    []*string{aws.String(Name)},
-		KeyPairName:      aws.String(dateName),
-		Tags: []*lightsail.Tag{
-			{
-				Key:   aws.String("SIp"),
-				Value: aws.String(dateName),
-			},
-		},
+		InstanceNames:    named,
+		UserData:         aws.String(" "),
 	})
 	if lsErr != nil {
+		log.Warning(lsErr.Error() + "lsErr")
 		return nil, lsErr
 	}
-	_, allErr := svc.AllocateStaticIp(&lightsail.AllocateStaticIpInput{StaticIpName: aws.String(dateName)})
-	if allErr != nil {
-		return nil, allErr
-	}
-	_, attErr := svc.AttachStaticIp(&lightsail.AttachStaticIpInput{
-		StaticIpName: aws.String(dateName),
-		InstanceName: aws.String(Name),
-	})
-	if attErr != nil {
-		return nil, attErr
-	}
+
 	return &LsInfo{
 		Name:   &Name,
 		Status: lsRt.Operations[0].Status,
-		Key:    key.PrivateKeyBase64,
 	}, nil
+}
+
+func (p *Aws) OffLightFirewall(Name string) (*LsInfo, error) {
+	svc := lightsail.New(p.Sess)
+	_, PortErr := svc.OpenInstancePublicPorts(&lightsail.OpenInstancePublicPortsInput{
+		InstanceName: aws.String(Name),
+		PortInfo: &lightsail.PortInfo{
+			Protocol: aws.String("all"),
+			FromPort: aws.Int64(0),
+			ToPort:   aws.Int64(65535),
+		},
+	})
+	if PortErr != nil {
+		log.Warning(PortErr.Error() + "PortErr")
+		return nil, PortErr
+	}
+	return nil, nil
 }
 
 func (p *Aws) GetLsInfo(Name string) (*LsInfo, error) {
@@ -83,6 +88,20 @@ func (p *Aws) GetLsInfo(Name string) (*LsInfo, error) {
 func (p *Aws) ListLs() ([]*lightsail.Instance, error) {
 	svc := lightsail.New(p.Sess)
 	rt, err := svc.GetInstances(&lightsail.GetInstancesInput{})
+	for rt.NextPageToken != nil {
+		new, werr := svc.GetInstances(&lightsail.GetInstancesInput{
+			PageToken: rt.NextPageToken,
+		})
+		if werr != nil {
+			log.Warning(werr.Error() + "werr")
+			return nil, nil
+		}
+
+		rt.Instances = append(rt.Instances, new.Instances...)
+		rt.NextPageToken = new.NextPageToken
+
+	}
+
 	if err != nil {
 		return nil, err
 	}

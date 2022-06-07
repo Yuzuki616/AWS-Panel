@@ -6,7 +6,3 @@ npm install
 npm run build
 mv dist/ ../tmp/web
 cd ../tmp/
-zip -r Aws-Panel.zip *
-mv Aws-Panel.zip ../
-cd ../
-rm -rf tmp
