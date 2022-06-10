@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/aws/aws-sdk-go/service/lightsail"
 	"github.com/gin-gonic/gin"
 	"github.com/yuzuki999/Aws-Panel/aws"
 	"github.com/yuzuki999/Aws-Panel/data"
@@ -17,6 +18,7 @@ func CreateLightsail(c *gin.Context) {
 	blueprintId := c.PostForm("blueprintId")
 	bundleId := c.PostForm("bundleId")
 	quantity := c.PostForm("quantity")
+	awsscreenneed := c.PostForm("Awssecretkey")
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New(zone, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
@@ -26,7 +28,7 @@ func CreateLightsail(c *gin.Context) {
 		})
 		return
 	}
-	_, createErr := client.CreateLs(name, zone+"a", blueprintId, bundleId, quantity)
+	createRt, createErr := client.CreateLs(name, zone+"a", blueprintId, bundleId, quantity, awsscreenneed)
 	if createErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -37,6 +39,7 @@ func CreateLightsail(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"code": 200,
 		"msg":  "创建成功",
+		"data": *createRt.Key,
 	})
 
 }
@@ -72,6 +75,11 @@ func ListLightsail(c *gin.Context) {
 		})
 		return
 	}
+
+	data.SortInstance(listRt, func(p, q *lightsail.Instance) bool {
+		return *q.Name < *p.Name
+	})
+
 	var instances []*aws.LsInfo
 	if listRt == nil {
 		instances = append(instances, &aws.LsInfo{})

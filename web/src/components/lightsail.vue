@@ -89,6 +89,17 @@
                             required
                         ></v-select>
                       </v-col>
+                       <v-col
+                          cols="12"
+                      >
+                        <v-select
+                            v-model="AwssecretkeySelected"
+                            :items="Awssecretkey"
+                            :rules="formRequired"
+                            label="使用自定义密钥"
+                            required
+                        ></v-select>
+                      </v-col>
                     </v-row>
                   </v-form>
                 </v-container>
@@ -299,14 +310,21 @@ export default {
       bundle: [
         {text: 'Nano', value: 'nano_2_0'},
         {text: 'Micro', value: 'micro_2_0'},
-        {text: 'Small', value: 'small_2_0'}
+        {text: 'Small', value: 'small_2_0'},
+   
       ],
-      bundleSelected: "",
+      bundleSelected: "nano_2_0",
       blueprint: [
         {text: 'Debian10', value: 'debian_10'},
-        {text: 'Ubuntu20.04', value: 'ubuntu_20_04'}
+        {text: 'Ubuntu20.04', value: 'ubuntu_20_04'},
+    
       ],
-      blueprintSelected: "",
+      blueprintSelected: "debian_10",
+      Awssecretkey: [
+        {text:'否', value: 'no'},
+        {text:'是', value: 'yes'},
+      ],
+      AwssecretkeySelected: "no",
       lsHeaders: [
         {text: '操作', value: 'Action'},
         {text: '名称', value: 'Name'},
@@ -338,17 +356,24 @@ export default {
         data.append("bundleId",this.bundleSelected)
         data.append("blueprintId",this.blueprintSelected)
         data.append("quantity",this.quantity)
+        data.append("Awssecretkey",this.AwssecretkeySelected)
         axios.post("/api/v1/LightSail/Create",data,{withCredentials: true}).then(rsp => {
           if (rsp.data.code===200){
             this.messageText="已添加至创建队列"
+            if(this.AwssecretkeySelected==='yes'){
+              this.sshKey = rsp.data.data
+            }
           }else{
-            console.error(rsp.data.msg)
+            this.messageText=rsp.data.msg
           }
         }).finally(()=>{
-          this.$refs.createLsForm.reset()
+
           this.loading=false
-          this.sshKeyDialog=true
+          if(this.AwssecretkeySelected==='yes'){
+            this.sshKeyDialog=true
+          }
           this.message = true
+          this.refreshLs()
         })
       }
     },
@@ -376,7 +401,7 @@ export default {
             }
           }else{
             this.lsInstances=[]
-            console.error(rsp.data.msg)
+            this.messageText=rsp.data.msg
           }
         }).finally(()=>{
           this.lsTableLoading=false
@@ -394,11 +419,12 @@ export default {
           if (rsp.data.code===200){
             this.messageText="已添加至启动队列"
           }else{
-            console.error(rsp.data.msg)
+            this.messageText=rsp.data.msg
           }
         }).finally(()=>{
           this.loading=false
           this.message=true
+          this.refreshLs()
         })
       }
     },
@@ -413,11 +439,12 @@ export default {
           if (rsp.data.code===200){
             this.messageText="已添加至停止队列"
           }else{
-            console.error(rsp.data.msg)
+            this.messageText=rsp.data.msg
           }
         }).finally(()=>{
           this.message=true
           this.loading=false
+          this.refreshLs()
         })
       }
     },
@@ -432,7 +459,7 @@ export default {
           if (rsp.data.code===200){
             this.messageText="已添加至重启队列"
           }else{
-            console.error(rsp.data.msg)
+            this.messageText=rsp.data.msg
           }
         }).finally(()=>{
           this.message=true
@@ -441,7 +468,10 @@ export default {
       }
     },
     offfirewall(item){
-      if ((item.Status!=='') && (item.Status!=='pending')){
+      if(item.Status==='pending'){
+          this.refreshLs()
+      }      
+      else if (item.Status!==''){
         this.loading = true
         let data=new FormData()
         data.append('secretName',this.secretName)
@@ -451,11 +481,12 @@ export default {
           if (rsp.data.code===200){
             this.messageText="已删除防火墙"
           }else{
-            console.error(rsp.data.msg)
+            this.messageText=rsp.data.msg
           }
         }).finally(()=>{
           this.message=true
           this.loading=false
+
         })
       }
     },
@@ -472,10 +503,12 @@ export default {
             this.refresh()
           }else{
             this.messageText = rsp.data.msg
-            this.message = true
+            
           }
         }).finally(()=>{
+          this.message = true
           this.loading=false
+          this.refreshLs()
         })
       }
     }
