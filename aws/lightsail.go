@@ -3,7 +3,6 @@ package aws
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/lightsail"
-	log "github.com/sirupsen/logrus"
 	"strconv"
 	"time"
 )
@@ -62,7 +61,6 @@ func (p *Aws) CreateLs(Name string, Zone string, BlueprintId string, BundleId st
 		//},
 	})
 	if lsErr != nil {
-		log.Warning(lsErr.Error() + "lsErr")
 		return nil, lsErr
 	}
 
@@ -96,7 +94,6 @@ func (p *Aws) OffLightFirewall(Name string) (*LsInfo, error) {
 		},
 	})
 	if PortErr != nil {
-		log.Warning(PortErr.Error() + "PortErr")
 		return nil, PortErr
 	}
 	return nil, nil
@@ -124,7 +121,6 @@ func (p *Aws) ListLs() ([]*lightsail.Instance, error) {
 			PageToken: rt.NextPageToken,
 		})
 		if werr != nil {
-			log.Warning(werr.Error() + "werr")
 			return nil, nil
 		}
 
