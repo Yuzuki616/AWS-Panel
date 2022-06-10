@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9c93a44a-63a3-46f2-acf7-4e6288798aa5" name="变更" comment="">
-      <change beforePath="$PROJECT_DIR$/aws/lightsail.go" beforeDir="false" afterPath="$PROJECT_DIR$/aws/lightsail.go" afterDir="false" />
-    </list>
+    <list default="true" id="9c93a44a-63a3-46f2-acf7-4e6288798aa5" name="变更" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

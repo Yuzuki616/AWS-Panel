@@ -78,13 +78,13 @@ func (p *Router) LoadRoute() {
 	p.router.POST("/api/v1/Quota/ChangeQuota")
 
 	//Page
-	p.router.Static("/js", "./web/dist/js")
-	p.router.Static("/css", "./web/dist/css")
-	p.router.Static("/img", "./web/dist/img")
+	p.router.Static("/js", "./web/js")
+	p.router.Static("/css", "./web/css")
+	p.router.Static("/img", "./web/img")
 	//p.router.StaticFile("/","./web/index.html")
-	p.router.StaticFile("/favicon.ico", "./web/dist/favicon.ico")
+	p.router.StaticFile("/favicon.ico", "./web/favicon.ico")
 	p.router.NoRoute(func(c *gin.Context) {
-		c.File("./web/dist/index.html")
+		c.File("./web/index.html")
 	})
 }
 
