@@ -24,7 +24,7 @@
 # 构建
 
 ``` bash
-git clone https://github.com/mytest233/AWS-Panel.git
+git clone https://github.com/Yuzuki616/AWS-Panel.git
 cd AWS-Panel
 bash build.sh
 ```
