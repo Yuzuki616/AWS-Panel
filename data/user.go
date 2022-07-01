@@ -9,9 +9,9 @@ import (
 
 type UserData struct {
 	gorm.Model
-	//IsAdmin bool `gorm:"IsAdmin"`
 	Status   int    `gorm:"Status"` //0 正常,1 封禁
 	Username string `gorm:"Username"`
+	Email    string `gorm:"Email"`
 	Password string `gorm:"Password"`
 	IsAdmin  int    `gorm:"IsAdmin"` //0 否,1 是
 }
@@ -28,13 +28,14 @@ func LoginVerify(Username string, PasswordMd5 string) error {
 	return nil
 }
 
-func Register(Username string, PasswordMd5 string) error {
+func Register(Username, Email, PasswordMd5 string) error {
 	var user UserData
 	Db.Where("Username = ?", Username).First(&user)
 	if user.ID != 0 {
 		return errors.New("用户已存在")
 	}
 	user.Username = Username
+	user.Email = Email
 	user.Password = PasswordMd5
 	user.Status = 0
 	Db.Create(&user)

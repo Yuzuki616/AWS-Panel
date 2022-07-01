@@ -5,11 +5,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetSessionId(c *gin.Context) int {
+func GetSessionId(c *gin.Context) string {
 	s := sessions.Default(c)
 	id := s.Get("loginSession")
 	if id == nil {
-		return 0
+		return ""
 	}
-	return id.(int)
+	return id.(string)
 }

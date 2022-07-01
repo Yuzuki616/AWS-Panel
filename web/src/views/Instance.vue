@@ -422,9 +422,12 @@ export default {
               if (response.data.code === 200) {
                 this.messageText = '已添加至创建队列！'
                 this.sshKey = response.data.data
-              } else {
-                this.messageText = response.data.msg
               }
+            }).catch(rsp =>{
+              if (rsp.response.data.msg !== undefined) {
+            console.error(rsp.response.data.msg)
+          }
+              this.messageText="操作失败"
             }).finally(() => {
               this.$refs.createForm.reset()
               this.loading = false
@@ -452,14 +455,16 @@ export default {
             axios.post("/api/v1/Ec2/Start", data, {withCredentials: true}).then(response => {
               if (response.data.code === 200) {
                 this.messageText = '已添加至启动队列！'
-                this.message = true
                 this.refresh()
-              } else {
-                this.messageText = response.data.msg
-                this.message = true
               }
+            }).catch(rsp =>{
+              if (rsp.response.data.msg !== undefined) {
+            console.error(rsp.response.data.msg)
+          }
+              this.messageText="操作失败"
             }).finally(() => {
               this.loading = false
+              this.message = true
             })
           }
         },
@@ -474,12 +479,15 @@ export default {
               if (response.data.code === 200) {
                 this.messageText = '已添加至停止队列！'
                 this.refresh()
-              } else {
-                this.messageText = response.data.msg
-                this.message = true
               }
+            }).catch(rsp =>{
+              if (rsp.response.data.msg !== undefined) {
+            console.error(rsp.response.data.msg)
+          }
+              this.messageText="操作失败"
             }).finally(() => {
               this.loading = false
+              this.message=true
             })
           }
         },
@@ -494,11 +502,14 @@ export default {
               if (response.data.code === 200) {
                 this.messageText = '已添加至重启队列！'
                 this.refresh()
-              } else {
-                this.messageText = response.data.msg
-                this.message = true
               }
+            }).catch(rsp =>{
+              if (rsp.response.data.msg !== undefined) {
+            console.error(rsp.response.data.msg)
+          }
+              this.messageText="操作失败"
             }).finally(() => {
+              this.message=true
               this.loading = false
             })
           }
@@ -514,11 +525,14 @@ export default {
               if (response.data.code === 200) {
                 this.messageText = '已添加至删除队列！'
                 this.refresh()
-              } else {
-                this.messageText = response.data.msg
-                this.message = true
               }
+            }).catch(rsp =>{
+              if (rsp.response.data.msg !== undefined) {
+            console.error(rsp.response.data.msg)
+          }
+              this.messageText="操作失败"
             }).finally(() => {
+              this.message=true
               this.loading = false
             })
           }

@@ -1,6 +1,6 @@
 module github.com/yuzuki999/Aws-Panel
 
-go 1.17
+go 1.18
 
 require (
 	github.com/aws/aws-sdk-go v1.43.17
@@ -10,7 +10,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.12
 	github.com/sirupsen/logrus v1.8.1
 	github.com/t-tomalak/logrus-easy-formatter v0.0.0-20190827215021-c074f06c5816
-	github.com/yuzuki999/Aws-Panel v0.0.0-20220311231048-fb8272665931
+	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gorm.io/driver/sqlite v1.3.1
 	gorm.io/gorm v1.23.2
 )
@@ -35,5 +35,6 @@ require (
 	github.com/ugorji/go/codec v1.1.7 // indirect
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 )

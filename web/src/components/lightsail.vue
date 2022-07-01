@@ -4,6 +4,21 @@
     <v-card-subtitle>Lightsail Instance</v-card-subtitle>
     <v-card-text>
       <v-row>
+        <v-col
+            cols="auto"
+        >
+          <v-select
+              v-model="zoneSelected"
+              :items="zone"
+              :rules="formRequired"
+              label="区域"
+              solo
+              dense
+              hide-details
+              @change="refreshLs"
+              required
+          ></v-select>
+        </v-col>
         <v-col cols="auto">
           <v-btn
               color="info"
@@ -33,15 +48,12 @@
                             required
                         ></v-text-field>
                       </v-col>
-                      <v-col
-                          cols="12"
-                      >
+                      <v-col cols="12">
                         <v-select
-                            v-model="zoneSelected"
-                            :items="zone"
+                            v-model="availabilityZoneSelected"
+                            :items="availabilityZone"
                             :rules="formRequired"
-                            label="地区"
-                            required
+                            label="可用区"
                         ></v-select>
                       </v-col>
                       <v-col
@@ -130,10 +142,24 @@
               class="elevation-1"
               disable-sort
           >
-          <template slot="no-data">
-            <div>无任何实例</div>
-          </template>
+            <template slot="no-data">
+              <div>无任何实例</div>
+            </template>
             <template v-slot:item.Action="{ item }">
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                      color="info"
+                      icon
+                      v-bind="attrs"
+                      @click="openInstancePorts(item)"
+                      v-on="on"
+                  >
+                    <v-icon>mdi-shield-lock-open</v-icon>
+                  </v-btn>
+                </template>
+                <span>开放端口</span>
+              </v-tooltip>
               <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
                   <v-btn
@@ -148,7 +174,6 @@
                 </template>
                 <span>启动</span>
               </v-tooltip>
-
               <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
                   <v-btn
@@ -234,17 +259,20 @@ export default {
       formRequired: [
         v => !!v || "必填项！"
       ],
-      secretName:'',
+      secretName: '',
       createDialog: false,
       sshKeyDialog: false,
       sshKey: "",
       lsName: "",
       zone: [
-        {text: '东京', value: 'ap-northeast-1'},
-        {text: '首尔', value: 'ap-northeast-2'},
-        {text: '新加坡', value: 'ap-southeast-1'}
+        {text: 'Tokyo', value: 'ap-northeast-1a'},
+        {text: 'Seoul', value: 'ap-northeast-2a'},
+        {text: 'Singapore', value: 'ap-southeast-1a'}
       ],
       zoneSelected: "",
+      availabilityZone: [],
+      availabilityZoneSelected: "",
+      availabilityZoneStore: new Map(),
       bundle: [
         {text: 'Nano', value: 'nano_2_0'},
         {text: 'Micro', value: 'micro_2_0'},
@@ -269,143 +297,232 @@ export default {
   },
   methods: {
     createCheck() {
-      if (this.secretName === "") {
-        this.messageText = '请先选择密钥'
+      if (this.secretName === "" || this.zoneSelected === "") {
+        this.messageText = '请先选择密钥和区域'
         this.message = true
       } else {
         this.createDialog = true
       }
     },
     createLs() {
-        if (this.$refs.createLsForm.validate()){
-          this.createDialog=false
-          this.loading=true
-          let data=new FormData()
-          data.append("secretName",this.secretName)
-          data.append("name",this.lsName)
-          data.append("zone",this.zoneSelected)
-          data.append("bundleId",this.bundleSelected)
-          data.append("blueprintId",this.blueprintSelected)
-          axios.post("/api/v1/LightSail/Create",data,{withCredentials: true}).then(rsp => {
-            if (rsp.data.code===200){
-              this.messageText="已添加至创建队列"
-            }else{
-              this.messageText=rsp.data.msg
-            }
-          }).finally(()=>{
-            this.$refs.createLsForm.reset()
-            this.loading=false
-            this.sshKeyDialog=true
-            this.message = true
-          })
-        }
+      if (this.$refs.createLsForm.validate()) {
+        this.createDialog = false
+        this.loading = true
+        let data = new FormData()
+        data.append("secretName", this.secretName)
+        data.append("name", this.lsName)
+        data.append("zone", this.zoneSelected)
+        data.append("availabilityZone",this.availabilityZoneSelected)
+        data.append("bundleId", this.bundleSelected)
+        data.append("blueprintId", this.blueprintSelected)
+        axios.post("/api/v1/LightSail/Create", data, {withCredentials: true}).then(rsp => {
+          if (rsp.data.code === 200) {
+            this.messageText = "已添加至创建队列"
+            this.sshKey=rsp.data.data
+            this.sshKeyDialog = true
+          }else{
+            this.messageText = "操作失败"
+          }
+        }).catch(rsp => {
+          this.messageText = "操作失败"
+          if (rsp.response.data.msg !== undefined) {
+            console.error(rsp.response.data.msg)
+          }
+        }).finally(() => {
+          this.$refs.createLsForm.reset()
+          this.loading = false
+          this.message = true
+        })
+      }
     },
     copySshKey() {
       this.sshKeyDialog = false
       navigator.clipboard.writeText(this.sshKey).then(() => {
         this.messageText = '已复制到剪贴板'
         this.message = true
-        this.sshKey=''
+        this.sshKey = ''
         this.refreshLs()
       })
     },
-    refreshLs() {
-      if (this.secretName !== "") {
-        this.lsTableLoading = true
-        let data=new FormData()
-        data.append("secretName",this.secretName)
-        axios.post("/api/v1/LightSail/List",data,{withCredentials: true}).then(rsp=>{
-          if (rsp.data.code===200){
-            if (rsp.data.data==null){
-              this.lsInstances=[]
-            }else{
-              this.lsInstances=rsp.data.data
+    getRegions() {
+      this.availabilityZoneStore.clear()
+      let data = new FormData()
+      data.append("secretName", this.secretName)
+      axios.post("/api/v1/LightSail/GetRegions", data, {withCredentials: true}).then(rsp => {
+        if (rsp.data.code === 200) {
+          let tmp = [];
+          rsp.data.data.forEach((item) => {
+            tmp.push({text: item.DisplayName, value: item.Name})
+            if (item.AvailabilityZones.length === 0) {
+              item.AvailabilityZones.push({"ZoneName": item.Name + "a"})
             }
-          }else{
-            this.lsInstances=[]
-            console.error(rsp.data.msg)
+            this.availabilityZoneStore.set(item.Name, item.AvailabilityZones)
+          })
+          this.zone = tmp
+        }
+      })
+    },
+    refreshLs() {
+      if ((this.zoneSelected === '') || (this.secretName === '')) {
+        return
+      }
+      this.availabilityZone = []
+      this.availabilityZoneStore.get(this.zoneSelected).forEach(item => {
+        this.availabilityZone.push(item.ZoneName)
+      })
+      this.lsTableLoading = true
+      let data = new FormData()
+      data.append("secretName", this.secretName)
+      data.append("zone", this.zoneSelected)
+      axios.post("/api/v1/LightSail/List", data, {withCredentials: true}).then(rsp => {
+        if (rsp.data.code === 200) {
+          if (rsp.data.data == null) {
+            this.lsInstances = []
+          } else {
+            this.lsInstances = rsp.data.data
           }
-        }).finally(()=>{
-          this.lsTableLoading=false
+        } else{
+            this.messageText = "操作失败"
+          }
+      }).catch(rsp => {
+        this.lsInstances = []
+        if (rsp.response.data.msg !== undefined) {
+          console.error(rsp.response.data.msg)
+        }
+        this.messageText = "操作失败"
+      }).finally(() => {
+        this.lsTableLoading = false
+      })
+    },
+    openInstancePorts(item){
+      if (item.Status !== '') {
+        this.loading = true
+        let data = new FormData()
+        data.append('secretName', this.secretName)
+        data.append('name', item.Name)
+        data.append("zone", this.zoneSelected)
+        axios.post("/api/v1/LightSail/OpenPorts", data,
+            {withCredentials: true}).then(rsp => {
+          if (rsp.data.code === 200) {
+            this.messageText = "开放端口成功"
+          }else{
+            this.messageText = "操作失败"
+          }
+        }).catch(rsp => {
+          if (rsp.response.data.msg !== undefined) {
+            console.error(rsp.response.data.msg)
+          }
+          this.messageText = "操作失败"
+        }).finally(() => {
+          this.loading = false
+          this.message = true
         })
       }
     },
     startInstance(item) {
-      if (item.Status!=='') {
+        if (item.Status !== '') {
         this.loading = true
-        let data=new FormData()
-        data.append('secretName',this.secretName)
-        data.append('name',item.Name)
-        axios.post("/api/v1/LightSail/Start",data,{withCredentials: true}).then(rsp =>{
-          if (rsp.data.code===200){
-            this.messageText="已添加至启动队列"
+        let data = new FormData()
+        data.append('secretName', this.secretName)
+        data.append('name', item.Name)
+        data.append("zone", this.zoneSelected)
+        axios.post("/api/v1/LightSail/Start", data,
+            {withCredentials: true}).then(rsp => {
+          if (rsp.data.code === 200) {
+            this.messageText = "已添加至启动队列"
           }else{
-            this.messageText=rsp.data.msg
+            this.messageText = "操作失败"
           }
-        }).finally(()=>{
-          this.loading=false
-          this.message=true
+        }).catch(rsp => {
+          if (rsp.response.data.msg !== undefined) {
+            console.error(rsp.response.data.msg)
+          }
+          this.messageText = "操作失败"
+        }).finally(() => {
+          this.loading = false
+          this.message = true
         })
       }
     },
     stopInstance(item) {
-      if (item.Status!=='') {
+      if (item.Status !== '') {
         this.loading = true
-        let data=new FormData()
-        data.append('secretName',this.secretName)
-        data.append('name',item.Name)
-        axios.post("/api/v1/LightSail/Stop",data,{withCredentials: true}).then(rsp =>{
-          if (rsp.data.code===200){
-            this.messageText="已添加至停止队列"
+        let data = new FormData()
+        data.append('secretName', this.secretName)
+        data.append('name', item.Name)
+        data.append("zone", this.zoneSelected)
+        axios.post("/api/v1/LightSail/Stop", data,
+            {withCredentials: true}).then(rsp => {
+          if (rsp.data.code === 200) {
+            this.messageText = "已添加至停止队列"
           }else{
-            this.messageText=rsp.data.msg
+            this.messageText = "操作失败"
           }
-        }).finally(()=>{
-          this.message=true
-          this.loading=false
+        }).catch(rsp => {
+          if (rsp.response.data.msg !== undefined) {
+            console.error(rsp.response.data.msg)
+          }
+          this.messageText = "操作失败"
+        }).finally(() => {
+          this.message = true
+          this.loading = false
         })
       }
     },
     restartInstance(item) {
-      if (item.Status!=='') {
+      if (item.Status !== '') {
         this.loading = true
-        let data=new FormData()
-        data.append('secretName',this.secretName)
-        data.append('name',item.Name)
-        axios.post("/api/v1/LightSail/Reboot",data,{withCredentials: true}).then(rsp =>{
-          if (rsp.data.code===200){
-            this.messageText="已添加至重启队列"
-          }else{
-            this.messageText=rsp.data.msg
+        let data = new FormData()
+        data.append('secretName', this.secretName)
+        data.append('name', item.Name)
+        data.append("zone", this.zoneSelected)
+        axios.post("/api/v1/LightSail/Reboot", data,
+            {withCredentials: true}).then(rsp => {
+          if (rsp.data.code === 200) {
+            this.messageText = "已添加至重启队列"
           }
-        }).finally(()=>{
-          this.message=true
-          this.loading=false
+        }).catch(rsp => {
+          if (rsp.response.data.msg !== undefined) {
+            console.error(rsp.response.data.msg)
+          }
+          this.messageText = "操作失败"
+        }).finally(() => {
+          this.message = true
+          this.loading = false
         })
       }
     },
     deleteInstance(item) {
-      if (item.Status!=='') {
+      if (item.Status !== '') {
         this.loading = true
-        let data=new FormData()
-        data.append('secretName',this.secretName)
-        data.append('name',item.Name)
-        axios.post("/api/v1/LightSail/Stop",data,{withCredentials: true}).then(rsp =>{
-          if (rsp.data.code===200){
-            this.messageText="已添加至删除队列"
+        let data = new FormData()
+        data.append('secretName', this.secretName)
+        data.append('name', item.Name)
+        data.append("zone", this.zoneSelected)
+        data.append("sourceName", item.SourceName)
+        axios.post("/api/v1/LightSail/Delete", data,
+            {withCredentials: true}).then(rsp => {
+          if (rsp.data.code === 200) {
+            this.messageText = "已添加至删除队列"
           }else{
-            this.messageText=rsp.data.msg
+            this.messageText = "操作失败"
           }
-        }).finally(()=>{
-          this.message=true
-          this.loading=false
+        }).catch(rsp => {
+          if (rsp.response.data.msg !== undefined) {
+            console.error(rsp.response.data.msg)
+          }
+          this.messageText = "操作失败"
+        }).finally(() => {
+          this.message = true
+          this.loading = false
         })
       }
     }
   },
   mounted() {
-    this.$on("secretSelect",secret=>{
-      this.secretName=secret
+    this.$on("secretSelect", secret => {
+      this.secretName = secret
+      this.getRegions()
       this.refreshLs()
     })
   }

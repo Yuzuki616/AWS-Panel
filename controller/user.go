@@ -33,7 +33,7 @@ func LoginVerify(c *gin.Context) {
 	loginErr := data.LoginVerify(username, utils.Md5Encode(password))
 	if loginErr == nil {
 		s := sessions.Default(c)
-		s.Set("loginSession", session.CreateSession(username))
+		s.Set("loginSession", session.CreateSession(username, 0))
 		saveErr := s.Save()
 		if saveErr != nil {
 			log.Error("")
@@ -53,6 +53,7 @@ func LoginVerify(c *gin.Context) {
 
 func Register(c *gin.Context) {
 	username := c.PostForm("username")
+	email := c.PostForm("email")
 	password := c.PostForm("password")
 	if username == "" || password == "" {
 		c.JSON(400, gin.H{
@@ -60,7 +61,17 @@ func Register(c *gin.Context) {
 			"msg":  "信息填写不完整",
 		})
 	}
-	registerErr := data.Register(username, utils.Md5Encode(password))
+	if data.IsEmailVerity() {
+		code := c.PostForm("code")
+		if code != session.GetMailCode(email) {
+			c.JSON(400, gin.H{
+				"code": 400,
+				"msg":  "验证码不正确或已失效",
+			})
+			return
+		}
+	}
+	registerErr := data.Register(username, email, utils.Md5Encode(password))
 	if registerErr == nil {
 		c.JSON(200, gin.H{
 			"code": 200,

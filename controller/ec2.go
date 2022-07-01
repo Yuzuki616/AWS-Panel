@@ -22,6 +22,7 @@ func CreateEc2(c *gin.Context) {
 			"code": 400,
 			"msg":  "信息填写不完整",
 		})
+		return
 	}
 	disk, _ := strconv.ParseInt(c.PostForm("disk"), 10, 64)
 	secret, _ := data.GetSecret(username, secretName)
@@ -75,6 +76,7 @@ func ListEc2(c *gin.Context) {
 			"code": 400,
 			"msg":  "信息填写不完整",
 		})
+		return
 	}
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
@@ -126,6 +128,7 @@ func GetEc2Info(c *gin.Context) {
 			"code": 400,
 			"msg":  "信息填写不完整",
 		})
+		return
 	}
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
@@ -163,6 +166,7 @@ func ChangeEc2Ip(c *gin.Context) {
 			"code": 400,
 			"msg":  "信息填写不完整",
 		})
+		return
 	}
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
@@ -201,6 +205,7 @@ func StopEc2(c *gin.Context) {
 			"code": 400,
 			"msg":  "信息填写不完整",
 		})
+		return
 	}
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
@@ -238,6 +243,7 @@ func StartEc2(c *gin.Context) {
 			"code": 400,
 			"msg":  "信息填写不完整",
 		})
+		return
 	}
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
@@ -274,6 +280,7 @@ func RebootEc2(c *gin.Context) {
 			"code": 400,
 			"msg":  "信息填写不完整",
 		})
+		return
 	}
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
@@ -282,6 +289,7 @@ func RebootEc2(c *gin.Context) {
 			"code": 400,
 			"msg":  newErr.Error(),
 		})
+		return
 	}
 	rebootErr := client.RebootEc2(ec2Id)
 	if rebootErr == nil {
@@ -310,6 +318,7 @@ func DeleteEc2(c *gin.Context) {
 			"code": 400,
 			"msg":  "信息填写不完整",
 		})
+		return
 	}
 	secret, _ := data.GetSecret(username, secretName)
 	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
@@ -318,6 +327,7 @@ func DeleteEc2(c *gin.Context) {
 			"code": 400,
 			"msg":  newErr.Error(),
 		})
+		return
 	}
 	delErr := client.DeleteEc2(ec2Id)
 	if delErr == nil {

@@ -32,7 +32,7 @@ func (p *Router) LoadRoute() {
 	//User
 	p.router.POST("/api/v1/User/Login", controller.LoginVerify)
 	p.router.POST("/api/v1/User/Register", controller.Register)
-	p.router.POST("/api/v1/user/SendMail", controller.SendMail)
+	//p.router.POST("/api/v1/user/SendMailVerify", controller.SendMailVerify)
 	p.router.POST("/api/v1/User/ChangeUsername", controller.ChangeUsername)
 	p.router.POST("/api/v1/User/ChangePassword", controller.ChangePassword)
 	p.router.GET("/api/v1/User/Info", controller.GetUserInfo)
@@ -61,14 +61,16 @@ func (p *Router) LoadRoute() {
 	p.router.POST("/api/v1/Ec2/Delete", controller.DeleteEc2)
 
 	//Lightsail
+	p.router.POST("/api/v1/LightSail/GetRegions", controller.GetRegions)
 	p.router.POST("/api/v1/LightSail/Create", controller.CreateLightsail)
+	p.router.POST("/api/v1/LightSail/OpenPorts", controller.OpenLightsailPorts)
 	p.router.POST("/api/v1/LightSail/GetBlueprintId")
 	p.router.POST("/api/v1/LightSail/Info", controller.GetLightsailInfo)
 	p.router.POST("/api/v1/LightSail/List", controller.ListLightsail)
 	p.router.POST("/api/v1/LightSail/ChangeIp", controller.ChangeLightsailIp)
 	p.router.POST("/api/v1/LightSail/Stop", controller.StopLightsail)
 	p.router.POST("/api/v1/LightSail/Start", controller.StartLightsail)
-	p.router.POST("/api/v1/LightSail/Reboot", controller.RebootEc2)
+	p.router.POST("/api/v1/LightSail/Reboot", controller.RebootLightsail)
 	p.router.POST("/api/v1/LightSail/Delete", controller.DeleteLightsail)
 
 	//Quota

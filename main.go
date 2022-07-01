@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const version = "0.3.5"
+const version = "0.3.6"
 
 func printVersion() {
 	log.Info("Aws Panel")

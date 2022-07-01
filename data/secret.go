@@ -16,7 +16,7 @@ type AwsSecret struct {
 
 func AddSecret(username string, name, Id, Secret string) error {
 	user := UserData{}
-	var secret = AwsSecret{}
+	secret := AwsSecret{}
 	Db.Where("Username = ?", username).First(&user)
 	if user.ID == 0 {
 		return errors.New("用户不存在")
