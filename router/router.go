@@ -70,6 +70,7 @@ func (p *Router) LoadRoute() {
 	p.router.POST("/api/v1/LightSail/Start", controller.StartLightsail)
 	p.router.POST("/api/v1/LightSail/Reboot", controller.RebootEc2)
 	p.router.POST("/api/v1/LightSail/Delete", controller.DeleteLightsail)
+	p.router.POST("/api/v1/LightSail/offFirewall", controller.OffFirewall)
 
 	//Quota
 	p.router.POST("/api/v1/Quota/Get")
