@@ -163,10 +163,10 @@ func (p *Aws) CreateEc2Wl(SubId string, Ami string, Name string, DiskSize int64)
 		return nil, tagErr
 	}
 	return &Ec2Info{
-		Name:       &Name,
-		Ip:         runRt.Instances[0].PrivateIpAddress,
-		InstanceId: runRt.Instances[0].InstanceId,
-		Status:     runRt.Instances[0].State.Name,
-		Key:        keyRt.KeyMaterial,
+		Name:       Name,
+		Ip:         *runRt.Instances[0].PrivateIpAddress,
+		InstanceId: *runRt.Instances[0].InstanceId,
+		Status:     *runRt.Instances[0].State.Name,
+		Key:        *keyRt.KeyMaterial,
 	}, nil
 }

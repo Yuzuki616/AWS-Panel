@@ -4,27 +4,28 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"reflect"
 	"time"
 )
 
 type Ec2Info struct {
-	Name       *string
-	InstanceId *string
-	Status     *string
-	Type       *string
-	Ip         *string
-	Key        *string
+	Name       string
+	InstanceId string
+	Status     string
+	Type       string
+	Ip         string
+	Key        string
 }
 
-func (p *Aws) CreateEc2(Ami string, Ec2Type string, Name string, DiskSize int64) (*Ec2Info, error) {
+func (p *Aws) CreateEc2(Ami, Ec2Type, Name, userdata string, DiskSize int64) (*Ec2Info, error) {
 	svc := ec2.New(p.Sess)
 	dateName := Name + time.Unix(time.Now().Unix(), 0).Format("_2006-01-02_15:04:05")
-	keyRt, keyErr := svc.CreateKeyPair(&ec2.CreateKeyPairInput{KeyName: &dateName})
+	key, keyErr := p.CreateKey(dateName + "_key")
 	if keyErr != nil {
 		return nil, fmt.Errorf("create key error: %v", keyErr)
 	} //创建ssh密钥
 	secRt, secErr := svc.CreateSecurityGroup(&ec2.CreateSecurityGroupInput{
-		GroupName:   aws.String(dateName + "security"),
+		GroupName:   aws.String(dateName + "_security"),
 		Description: aws.String("A security group for aws manger bot"),
 	}) //创建安全组
 	if secErr != nil {
@@ -55,13 +56,14 @@ func (p *Aws) CreateEc2(Ami string, Ec2Type string, Name string, DiskSize int64)
 	}
 	ebs[0].Ebs.VolumeSize = &DiskSize
 	runRt, runErr := svc.RunInstances(&ec2.RunInstancesInput{
-		ImageId:             aws.String(Ami),
-		InstanceType:        aws.String(Ec2Type),
+		ImageId:             &Ami,
+		InstanceType:        &Ec2Type,
 		MinCount:            aws.Int64(1),
 		MaxCount:            aws.Int64(1),
 		KeyName:             &dateName,
 		BlockDeviceMappings: ebs,
 		SecurityGroupIds:    []*string{secRt.GroupId},
+		UserData:            &userdata,
 	}) //创建ec2实例
 	if runErr != nil {
 		return nil, fmt.Errorf("run instances error: %v", runErr)
@@ -71,7 +73,7 @@ func (p *Aws) CreateEc2(Ami string, Ec2Type string, Name string, DiskSize int64)
 		Tags: []*ec2.Tag{
 			{
 				Key:   aws.String("Name"),
-				Value: aws.String(Name),
+				Value: &Name,
 			},
 		},
 	}) //创建标签
@@ -79,10 +81,10 @@ func (p *Aws) CreateEc2(Ami string, Ec2Type string, Name string, DiskSize int64)
 		return nil, fmt.Errorf("create tag error: %v", tagErr)
 	}
 	return &Ec2Info{
-		Name:       &Name,
-		InstanceId: runRt.Instances[0].InstanceId,
-		Status:     runRt.Instances[0].State.Name,
-		Key:        keyRt.KeyMaterial,
+		Name:       Name,
+		InstanceId: *runRt.Instances[0].InstanceId,
+		Status:     *runRt.Instances[0].State.Name,
+		Key:        key,
 	}, nil
 }
 
@@ -92,7 +94,7 @@ func (p *Aws) ChangeEc2Ip(InstanceId string) (*string, error) {
 		Filters: []*ec2.Filter{
 			{
 				Name:   aws.String("instance-id"),
-				Values: []*string{aws.String(InstanceId)},
+				Values: []*string{&InstanceId},
 			},
 		},
 	})
@@ -111,12 +113,19 @@ func (p *Aws) ChangeEc2Ip(InstanceId string) (*string, error) {
 	}
 	_, assErr := svc.AssociateAddress(&ec2.AssociateAddressInput{
 		AllocationId: allRt.AllocationId,
-		InstanceId:   aws.String(InstanceId),
+		InstanceId:   &InstanceId,
 	})
 	if assErr != nil {
 		return nil, fmt.Errorf("associate address error: %v", assErr)
 	}
 	return allRt.PublicIp, nil
+}
+
+func getNameFromTags(v []*ec2.Tag) string {
+	if reflect.ValueOf(v).IsNil() {
+		return ""
+	}
+	return *v[0].Value
 }
 
 func (p *Aws) GetEc2Info(InstanceId string) (*Ec2Info, error) {
@@ -126,25 +135,36 @@ func (p *Aws) GetEc2Info(InstanceId string) (*Ec2Info, error) {
 		return nil, err
 	}
 	return &Ec2Info{
-		Name:       CheckNameNil(rt.Reservations[0].Instances[0].Tags),
-		InstanceId: rt.Reservations[0].Instances[0].InstanceId,
-		Status:     rt.Reservations[0].Instances[0].State.Name,
-		Ip:         rt.Reservations[0].Instances[0].PublicIpAddress,
+		Name:       getNameFromTags(rt.Reservations[0].Instances[0].Tags),
+		InstanceId: *rt.Reservations[0].Instances[0].InstanceId,
+		Status:     *rt.Reservations[0].Instances[0].State.Name,
+		Ip:         *rt.Reservations[0].Instances[0].PublicIpAddress,
 	}, nil
 }
 
-func (p *Aws) ListEc2() ([]*ec2.Reservation, error) {
+func (p *Aws) ListEc2() ([]Ec2Info, error) {
 	svc := ec2.New(p.Sess)
 	rt, err := svc.DescribeInstances(&ec2.DescribeInstancesInput{MaxResults: aws.Int64(100)})
 	if err != nil {
 		return nil, err
 	}
-	return rt.Reservations, nil
+	ec2Instances := make([]Ec2Info, 0, len(rt.Reservations))
+	for _, v := range rt.Reservations {
+		ec2Instances = append(ec2Instances, Ec2Info{
+			Name:       getNameFromTags(v.Instances[0].Tags),
+			Status:     *v.Instances[0].State.Name,
+			Type:       *v.Instances[0].InstanceType,
+			InstanceId: *v.Instances[0].InstanceId,
+			Ip:         *v.Instances[0].PublicIpAddress,
+		})
+	}
+	return ec2Instances, nil
 }
 
 func (p *Aws) StartEc2(InstanceId string) error {
 	svc := ec2.New(p.Sess)
-	_, err := svc.StartInstances(&ec2.StartInstancesInput{InstanceIds: []*string{aws.String(InstanceId)}})
+	_, err := svc.StartInstances(&ec2.StartInstancesInput{
+		InstanceIds: []*string{&InstanceId}})
 	if err != nil {
 		return err
 	}
@@ -153,7 +173,8 @@ func (p *Aws) StartEc2(InstanceId string) error {
 
 func (p *Aws) StopEc2(InstanceId string) error {
 	svc := ec2.New(p.Sess)
-	_, err := svc.StopInstances(&ec2.StopInstancesInput{InstanceIds: []*string{aws.String(InstanceId)}})
+	_, err := svc.StopInstances(&ec2.StopInstancesInput{
+		InstanceIds: []*string{&InstanceId}})
 	if err != nil {
 		return err
 	}
@@ -162,7 +183,8 @@ func (p *Aws) StopEc2(InstanceId string) error {
 
 func (p *Aws) RebootEc2(InstanceId string) error {
 	svc := ec2.New(p.Sess)
-	_, err := svc.RebootInstances(&ec2.RebootInstancesInput{InstanceIds: []*string{aws.String(InstanceId)}})
+	_, err := svc.RebootInstances(&ec2.RebootInstancesInput{
+		InstanceIds: []*string{&InstanceId}})
 	if err != nil {
 		return err
 	}
@@ -183,12 +205,14 @@ func (p *Aws) DeleteEc2(InstanceId string) error {
 		return fmt.Errorf("get ip error: %v", ipErr)
 	}
 	if len(ip.Addresses) != 0 {
-		_, relErr := svc.ReleaseAddress(&ec2.ReleaseAddressInput{AllocationId: ip.Addresses[0].AssociationId})
+		_, relErr := svc.ReleaseAddress(&ec2.ReleaseAddressInput{
+			AllocationId: ip.Addresses[0].AssociationId})
 		if relErr != nil {
 			return fmt.Errorf("release ip error: %v", relErr)
 		}
 	}
-	_, err := svc.TerminateInstances(&ec2.TerminateInstancesInput{InstanceIds: []*string{aws.String(InstanceId)}})
+	_, err := svc.TerminateInstances(&ec2.TerminateInstancesInput{
+		InstanceIds: []*string{aws.String(InstanceId)}})
 	if err != nil {
 		return fmt.Errorf("terminate instance error: %v", err)
 	}
@@ -235,9 +259,37 @@ func (p *Aws) getAmiEbsMap(AmiId string) ([]*ec2.BlockDeviceMapping, error) {
 
 func (p *Aws) GetWindowsPassword(InstanceId string) (*ec2.GetPasswordDataOutput, error) {
 	svc := ec2.New(p.Sess)
-	rt, err := svc.GetPasswordData(&ec2.GetPasswordDataInput{InstanceId: aws.String(InstanceId)})
+	rt, err := svc.GetPasswordData(&ec2.GetPasswordDataInput{
+		InstanceId: &InstanceId})
 	if err != nil {
 		return nil, err
 	}
 	return rt, nil
+}
+
+func (p *Aws) CreateKey(name string) (string, error) {
+	svc := ec2.New(p.Sess)
+	rt, err := svc.CreateKeyPair(&ec2.CreateKeyPairInput{KeyName: &name})
+	if err != nil {
+		return "", err
+	}
+	return *rt.KeyMaterial, nil
+}
+
+func (p *Aws) ListKey() ([]*ec2.KeyPairInfo, error) {
+	svc := ec2.New(p.Sess)
+	rt, err := svc.DescribeKeyPairs(&ec2.DescribeKeyPairsInput{})
+	if err != nil {
+		return nil, err
+	}
+	return rt.KeyPairs, nil
+}
+
+func (p *Aws) DeleteKey(name string) error {
+	svc := ec2.New(p.Sess)
+	_, err := svc.DeleteKeyPair(&ec2.DeleteKeyPairInput{KeyName: &name})
+	if err != nil {
+		return err
+	}
+	return nil
 }

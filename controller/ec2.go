@@ -12,21 +12,14 @@ func CreateEc2(c *gin.Context) {
 	if username == "" {
 		return
 	}
-	secretName := c.PostForm("secretName")
-	region := c.PostForm("region")
-	ami := c.PostForm("ami")
-	ec2Type := c.PostForm("ec2Type")
-	ec2Name := c.PostForm("ec2Name")
-	if secretName == "" || region == "" || ami == "" || ec2Type == "" || ec2Name == "" {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  "信息填写不完整",
-		})
+	userdata := c.PostForm("userdata")
+	params := GetAndCheckParams(c, "secretName", "region", "ami", "ec2Type", "ec2Name", "disk")
+	if len(params) == 0 {
 		return
 	}
-	disk, _ := strconv.ParseInt(c.PostForm("disk"), 10, 64)
-	secret, _ := data.GetSecret(username, secretName)
-	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
+	disk, _ := strconv.ParseInt(params["disk"], 10, 64)
+	secret, _ := data.GetSecret(username, params["secretName"])
+	client, newErr := aws.New(params["region"], secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -34,7 +27,7 @@ func CreateEc2(c *gin.Context) {
 		})
 		return
 	}
-	amiTmp, amiErr := client.GetAmiId(ami)
+	amiTmp, amiErr := client.GetAmiId(params["ami"])
 	if amiErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -49,7 +42,7 @@ func CreateEc2(c *gin.Context) {
 		})
 		return
 	}
-	creRt, creErr := client.CreateEc2(amiTmp, ec2Type, ec2Name, disk)
+	creRt, creErr := client.CreateEc2(amiTmp, params["ec2Type"], params["ec2Name"], userdata, disk)
 	if creErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -60,7 +53,7 @@ func CreateEc2(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"code": 200,
 		"msg":  "创建成功",
-		"data": *creRt.Key,
+		"data": creRt.Key,
 	})
 }
 
@@ -69,17 +62,12 @@ func ListEc2(c *gin.Context) {
 	if username == "" {
 		return
 	}
-	secretName := c.PostForm("secretName")
-	region := c.PostForm("region")
-	if secretName == "" || region == "" {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  "信息填写不完整",
-		})
+	params := GetAndCheckParams(c, "secretName", "region")
+	if len(params) == 0 {
 		return
 	}
-	secret, _ := data.GetSecret(username, secretName)
-	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
+	secret, _ := data.GetSecret(username, params["secretName"])
+	client, newErr := aws.New(params["region"], secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -95,23 +83,10 @@ func ListEc2(c *gin.Context) {
 		})
 		return
 	}
-	var ec2Instances []*aws.Ec2Info
-	if ec2Info == nil {
-		ec2Instances = nil
-	} else {
-		for i := range ec2Info {
-			ec2Instances = append(ec2Instances, &aws.Ec2Info{
-				Name:       aws.CheckNameNil(ec2Info[i].Instances[0].Tags),
-				Status:     ec2Info[i].Instances[0].State.Name,
-				Type:       ec2Info[i].Instances[0].InstanceType,
-				InstanceId: ec2Info[i].Instances[0].InstanceId,
-				Ip:         ec2Info[i].Instances[0].PublicIpAddress,
-			})
-		}
-	}
+
 	c.JSON(200, gin.H{
 		"code": 200,
-		"data": ec2Instances,
+		"data": ec2Info,
 	})
 }
 
@@ -120,18 +95,12 @@ func GetEc2Info(c *gin.Context) {
 	if username == "" {
 		return
 	}
-	secretName := c.PostForm("secretName")
-	region := c.PostForm("region")
-	ec2Id := c.PostForm("ec2Id")
-	if secretName == "" || region == "" || ec2Id == "" {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  "信息填写不完整",
-		})
+	params := GetAndCheckParams(c, "secretName", "region", "ec2Id")
+	if len(params) == 0 {
 		return
 	}
-	secret, _ := data.GetSecret(username, secretName)
-	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
+	secret, _ := data.GetSecret(username, params["secretName"])
+	client, newErr := aws.New(params["region"], secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -139,7 +108,7 @@ func GetEc2Info(c *gin.Context) {
 		})
 		return
 	}
-	ec2Info, getErr := client.GetEc2Info(ec2Id)
+	ec2Info, getErr := client.GetEc2Info(params["ec2Id"])
 	if getErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -158,18 +127,12 @@ func ChangeEc2Ip(c *gin.Context) {
 	if username == "" {
 		return
 	}
-	secretName := c.PostForm("secretName")
-	region := c.PostForm("region")
-	ec2Id := c.PostForm("ec2Id")
-	if secretName == "" || region == "" || ec2Id == "" {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  "信息填写不完整",
-		})
+	params := GetAndCheckParams(c, "secretName", "region", "ec2Id")
+	if len(params) == 0 {
 		return
 	}
-	secret, _ := data.GetSecret(username, secretName)
-	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
+	secret, _ := data.GetSecret(username, params["secretName"])
+	client, newErr := aws.New(params["region"], secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -177,7 +140,7 @@ func ChangeEc2Ip(c *gin.Context) {
 		})
 		return
 	}
-	newIp, changeErr := client.ChangeEc2Ip(ec2Id)
+	newIp, changeErr := client.ChangeEc2Ip(params["ec2Id"])
 	if changeErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -197,18 +160,12 @@ func StopEc2(c *gin.Context) {
 	if username == "" {
 		return
 	}
-	secretName := c.PostForm("secretName")
-	region := c.PostForm("region")
-	ec2Id := c.PostForm("ec2Id")
-	if secretName == "" || region == "" || ec2Id == "" {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  "信息填写不完整",
-		})
+	params := GetAndCheckParams(c, "secretName", "region", "ec2Id")
+	if len(params) == 0 {
 		return
 	}
-	secret, _ := data.GetSecret(username, secretName)
-	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
+	secret, _ := data.GetSecret(username, params["secretName"])
+	client, newErr := aws.New(params["region"], secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -216,7 +173,7 @@ func StopEc2(c *gin.Context) {
 		})
 		return
 	}
-	stopErr := client.StopEc2(ec2Id)
+	stopErr := client.StopEc2(params["ec2Id"])
 	if stopErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -235,25 +192,19 @@ func StartEc2(c *gin.Context) {
 	if username == "" {
 		return
 	}
-	secretName := c.PostForm("secretName")
-	region := c.PostForm("region")
-	ec2Id := c.PostForm("ec2Id")
-	if secretName == "" || region == "" || ec2Id == "" {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  "信息填写不完整",
-		})
+	params := GetAndCheckParams(c, "secretName", "region", "ec2Id")
+	if len(params) == 0 {
 		return
 	}
-	secret, _ := data.GetSecret(username, secretName)
-	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
+	secret, _ := data.GetSecret(username, params["secretName"])
+	client, newErr := aws.New(params["region"], secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  newErr.Error(),
 		})
 	}
-	startErr := client.StartEc2(ec2Id)
+	startErr := client.StartEc2(params["ec2Id"])
 	if startErr == nil {
 		c.JSON(200, gin.H{
 			"code": 200,
@@ -272,18 +223,12 @@ func RebootEc2(c *gin.Context) {
 	if username == "" {
 		return
 	}
-	secretName := c.PostForm("secretName")
-	region := c.PostForm("region")
-	ec2Id := c.PostForm("ec2Id")
-	if secretName == "" || region == "" || ec2Id == "" {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  "信息填写不完整",
-		})
+	params := GetAndCheckParams(c, "secretName", "region", "ec2Id")
+	if len(params) == 0 {
 		return
 	}
-	secret, _ := data.GetSecret(username, secretName)
-	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
+	secret, _ := data.GetSecret(username, params["secretName"])
+	client, newErr := aws.New(params["region"], secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -291,7 +236,7 @@ func RebootEc2(c *gin.Context) {
 		})
 		return
 	}
-	rebootErr := client.RebootEc2(ec2Id)
+	rebootErr := client.RebootEc2(params["ec2Id"])
 	if rebootErr == nil {
 		c.JSON(200, gin.H{
 			"code": 200,
@@ -310,18 +255,12 @@ func DeleteEc2(c *gin.Context) {
 	if username == "" {
 		return
 	}
-	secretName := c.PostForm("secretName")
-	region := c.PostForm("region")
-	ec2Id := c.PostForm("ec2Id")
-	if secretName == "" || region == "" || ec2Id == "" {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  "信息填写不完整",
-		})
+	params := GetAndCheckParams(c, "secretName", "region", "ec2Id")
+	if len(params) == 0 {
 		return
 	}
-	secret, _ := data.GetSecret(username, secretName)
-	client, newErr := aws.New(region, secret.SecretId, secret.Secret, "")
+	secret, _ := data.GetSecret(username, params["secretName"])
+	client, newErr := aws.New(params["region"], secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -329,7 +268,7 @@ func DeleteEc2(c *gin.Context) {
 		})
 		return
 	}
-	delErr := client.DeleteEc2(ec2Id)
+	delErr := client.DeleteEc2(params["ec2Id"])
 	if delErr == nil {
 		c.JSON(200, gin.H{
 			"code": 200,

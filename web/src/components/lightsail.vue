@@ -499,7 +499,7 @@ export default {
         data.append('secretName', this.secretName)
         data.append('name', item.Name)
         data.append("zone", this.zoneSelected)
-        data.append("sourceName", item.SourceName)
+        data.append("resourceName", item.ResourceName)
         axios.post("/api/v1/LightSail/Delete", data,
             {withCredentials: true}).then(rsp => {
           if (rsp.data.code === 200) {
