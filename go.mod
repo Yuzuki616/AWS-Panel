@@ -1,4 +1,4 @@
-module github.com/yuzuki999/Aws-Panel
+module github.com/Yuzuki616/Aws-Panel
 
 go 1.18
 

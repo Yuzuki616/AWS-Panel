@@ -1,10 +1,10 @@
 package controller
 
 import (
+	"github.com/Yuzuki616/Aws-Panel/data"
+	"github.com/Yuzuki616/Aws-Panel/mail"
+	"github.com/Yuzuki616/Aws-Panel/session"
 	"github.com/gin-gonic/gin"
-	"github.com/yuzuki999/Aws-Panel/data"
-	"github.com/yuzuki999/Aws-Panel/mail"
-	"github.com/yuzuki999/Aws-Panel/session"
 	"math/rand"
 	"strconv"
 )

@@ -2,8 +2,8 @@ package data
 
 import (
 	"errors"
+	"github.com/Yuzuki616/Aws-Panel/utils"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/yuzuki999/Aws-Panel/utils"
 	"gorm.io/gorm"
 )
 

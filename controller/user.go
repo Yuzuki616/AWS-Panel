@@ -1,12 +1,12 @@
 package controller
 
 import (
+	"github.com/Yuzuki616/Aws-Panel/data"
+	"github.com/Yuzuki616/Aws-Panel/session"
+	"github.com/Yuzuki616/Aws-Panel/utils"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
-	"github.com/yuzuki999/Aws-Panel/data"
-	"github.com/yuzuki999/Aws-Panel/session"
-	"github.com/yuzuki999/Aws-Panel/utils"
 )
 
 func GetLoginUser(c *gin.Context) string {

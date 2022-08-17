@@ -1,11 +1,11 @@
 package router
 
 import (
+	"github.com/Yuzuki616/Aws-Panel/controller"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-	"github.com/yuzuki999/Aws-Panel/controller"
 )
 
 type Router struct {

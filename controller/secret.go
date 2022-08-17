@@ -1,8 +1,8 @@
 package controller
 
 import (
+	"github.com/Yuzuki616/Aws-Panel/data"
 	"github.com/gin-gonic/gin"
-	"github.com/yuzuki999/Aws-Panel/data"
 )
 
 func AddSecret(c *gin.Context) {
