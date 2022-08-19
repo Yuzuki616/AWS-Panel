@@ -1,4 +1,5 @@
 # Aws-Panel
+[![](https://img.shields.io/badge/TgChat-%E4%BA%A4%E6%B5%81%E7%BE%A4-blue)](https://t.me/YuzukiProjects)
 
 一个可以管理AWS资源的Web面板
 
