@@ -51,7 +51,7 @@ jobs:
           v: true
           x: false
           race: false
-          ldflags: -s -w --extldflags "-static -fpic"
+          ldflags: -s -w --extldflags "-fpic"
           buildmode: default
       - name: Zip
         run: |
