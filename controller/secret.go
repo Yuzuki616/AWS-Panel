@@ -6,7 +6,7 @@ import (
 )
 
 func AddSecret(c *gin.Context) {
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	params := GetAndCheckParams(c, "name", "id", "secret")
 	if len(params) == 0 {
 		return
@@ -30,7 +30,7 @@ func AddSecret(c *gin.Context) {
 }
 
 func ListSecret(c *gin.Context) {
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -53,7 +53,7 @@ func ListSecret(c *gin.Context) {
 }
 
 func GetSecretInfo(c *gin.Context) {
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -80,7 +80,7 @@ func GetSecretInfo(c *gin.Context) {
 }
 
 func DelSecret(c *gin.Context) {
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	if username == "" {
 		return
 	}

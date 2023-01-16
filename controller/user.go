@@ -2,15 +2,12 @@ package controller
 
 import (
 	"github.com/Yuzuki616/Aws-Panel/data"
-	"github.com/Yuzuki616/Aws-Panel/session"
-	"github.com/Yuzuki616/Aws-Panel/utils"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
 )
 
-func GetLoginUser(c *gin.Context) string {
-	username := session.GetSession(GetSessionId(c))
+func getLoginUser(c *gin.Context) string {
+	username, _ := cacheClient.Get(getSessionId(c))
 	if username == "" {
 		c.JSON(401, gin.H{
 			"code": 401,
@@ -18,7 +15,7 @@ func GetLoginUser(c *gin.Context) string {
 		})
 		return ""
 	}
-	return username
+	return username.(string)
 }
 
 func LoginVerify(c *gin.Context) {
@@ -30,25 +27,27 @@ func LoginVerify(c *gin.Context) {
 			"msg":  "信息填写不完整",
 		})
 	}
-	loginErr := data.LoginVerify(username, utils.Md5Encode(password))
-	if loginErr == nil {
-		s := sessions.Default(c)
-		s.Set("loginSession", session.CreateSession(username, 0))
-		saveErr := s.Save()
-		if saveErr != nil {
-			log.Error("")
-		}
-		c.JSON(200, gin.H{
-			"code":    200,
-			"isAdmin": data.IsAdmin(username),
-			"msg":     "登录成功",
-		})
-	} else {
+	err := data.VerifyUser(username, password)
+	if err != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
-			"msg":  loginErr.Error(),
+			"msg":  err.Error(),
 		})
+		return
 	}
+	err = addLoginSession(c, username)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  err.Error(),
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"code":    200,
+		"isAdmin": data.IsAdmin(username),
+		"msg":     "登录成功",
+	})
 }
 
 func Register(c *gin.Context) {
@@ -63,7 +62,7 @@ func Register(c *gin.Context) {
 	}
 	if data.IsEmailVerity() {
 		code := c.PostForm("code")
-		if code != session.GetMailCode(email) {
+		if savedCode, e := cacheClient.Get(email + "|code"); !e || savedCode.(string) != code {
 			c.JSON(400, gin.H{
 				"code": 400,
 				"msg":  "验证码不正确或已失效",
@@ -71,7 +70,7 @@ func Register(c *gin.Context) {
 			return
 		}
 	}
-	registerErr := data.Register(username, email, utils.Md5Encode(password))
+	registerErr := data.CreateUser(username, email, password, 0)
 	if registerErr == nil {
 		c.JSON(200, gin.H{
 			"code": 200,
@@ -86,7 +85,7 @@ func Register(c *gin.Context) {
 }
 
 func ChangeUsername(c *gin.Context) {
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	oldName := c.PostForm("oldUsername")
 	newName := c.PostForm("newUsername")
 	password := c.PostForm("password")
@@ -109,7 +108,7 @@ func ChangeUsername(c *gin.Context) {
 }
 
 func ChangePassword(c *gin.Context) {
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	oldPassword := c.PostForm("oldPassword")
 	newPassword := c.PostForm("newPassword")
 	if oldPassword == "" || newPassword == "" {
@@ -121,7 +120,7 @@ func ChangePassword(c *gin.Context) {
 	if username == "" {
 		return
 	}
-	changeErr := data.ChangePassword(username, utils.Md5Encode(oldPassword), utils.Md5Encode(newPassword))
+	changeErr := data.ChangeUserPassword(username, oldPassword, newPassword)
 	if changeErr == nil {
 		s := sessions.Default(c)
 		s.Clear()
@@ -139,7 +138,7 @@ func ChangePassword(c *gin.Context) {
 }
 
 func GetUserInfo(c *gin.Context) {
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -151,11 +150,15 @@ func GetUserInfo(c *gin.Context) {
 }
 
 func Logout(c *gin.Context) {
-	id := GetSessionId(c)
-	session.DeleteSession(id)
-	s := sessions.Default(c)
-	s.Clear()
-	_ = s.Save()
+	id := getSessionId(c)
+	err := delLoginSession(c, id)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  err.Error(),
+		})
+		return
+	}
 	c.JSON(200, gin.H{
 		"code": 200,
 		"msg":  "退出成功",
@@ -163,7 +166,7 @@ func Logout(c *gin.Context) {
 }
 
 func IsAdmin(c *gin.Context) {
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -182,7 +185,7 @@ func IsAdmin(c *gin.Context) {
 
 func DeleteUser(c *gin.Context) {
 	user := c.PostForm("username")
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -209,7 +212,7 @@ func DeleteUser(c *gin.Context) {
 
 func BanUser(c *gin.Context) {
 	user := c.PostForm("username")
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -236,7 +239,7 @@ func BanUser(c *gin.Context) {
 
 func UnBanUser(c *gin.Context) {
 	user := c.PostForm("username")
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -262,7 +265,7 @@ func UnBanUser(c *gin.Context) {
 }
 
 func GetUserList(c *gin.Context) {
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	if username == "" {
 		return
 	}

@@ -16,10 +16,10 @@ type UserData struct {
 	IsAdmin  int    `gorm:"IsAdmin"` //0 否,1 是
 }
 
-func LoginVerify(Username string, PasswordMd5 string) error {
+func VerifyUser(Username string, Password string) error {
 	var user UserData
-	Db.Where("Username = ? and password = ?", Username, PasswordMd5).First(&user)
-	if user.ID == 0 {
+	Db.Where("Username = ?", Username).First(&user)
+	if user.ID == 0 || !utils.VerifyPasswordHash(Password, user.Password) {
 		return errors.New("用户名或密码错误")
 	}
 	if user.Status == 1 {
@@ -28,7 +28,7 @@ func LoginVerify(Username string, PasswordMd5 string) error {
 	return nil
 }
 
-func Register(Username, Email, PasswordMd5 string) error {
+func CreateUser(Username, Email, Password string, IsAdmin int) error {
 	var user UserData
 	Db.Where("Username = ?", Username).First(&user)
 	if user.ID != 0 {
@@ -36,8 +36,13 @@ func Register(Username, Email, PasswordMd5 string) error {
 	}
 	user.Username = Username
 	user.Email = Email
-	user.Password = PasswordMd5
+	Password, err := utils.GenPasswordHash(Password)
+	if err != nil {
+		return err
+	}
+	user.Password = Password
 	user.Status = 0
+	user.IsAdmin = IsAdmin
 	Db.Create(&user)
 	return nil
 }
@@ -53,28 +58,18 @@ func ChangeUsername(OldUsername, NewUsername, Password string) error {
 	return nil
 }
 
-func ChangePassword(username string, OldPasswordMd5, NewPasswordMd5 string) error {
+func ChangeUserPassword(username string, OldPasswordMd5, NewPasswordMd5 string) error {
 	var user UserData
-	Db.Where("Username = ? and password = ?", username, OldPasswordMd5).First(&user)
+	Db.Where("Username = ?", username).First(&user)
 	if user.ID == 0 {
+		return errors.New("用户不存在或密码错误")
+	}
+	if !utils.VerifyPasswordHash(OldPasswordMd5, user.Password) {
 		return errors.New("用户不存在或密码错误")
 	}
 	user.Password = NewPasswordMd5
 	Db.Save(&user)
 	return nil
-}
-
-func CreateAdminUser() {
-	var user UserData
-	Db.Where("Username = ?", "admin").First(&user)
-	if user.ID != 0 {
-		return
-	}
-	user.Username = "admin"
-	user.Password = utils.Md5Encode("admin123456")
-	user.Status = 0
-	user.IsAdmin = 1
-	Db.Create(&user)
 }
 
 func IsAdmin(Username string) bool {

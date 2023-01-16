@@ -20,7 +20,7 @@ type Ec2Info struct {
 func (p *Aws) CreateEc2(Ami, Ec2Type, Name, userdata string, DiskSize int64) (*Ec2Info, error) {
 	svc := ec2.New(p.Sess)
 	dateName := Name + time.Unix(time.Now().Unix(), 0).Format("_2006-01-02_15:04:05")
-	key, keyErr := p.CreateKey(dateName + "_key")
+	key, keyErr := p.CreateEc2SshKey(dateName + "_key")
 	if keyErr != nil {
 		return nil, fmt.Errorf("create key error: %v", keyErr)
 	} //创建ssh密钥
@@ -257,7 +257,7 @@ func (p *Aws) getAmiEbsMap(AmiId string) ([]*ec2.BlockDeviceMapping, error) {
 	return ami.Images[0].BlockDeviceMappings, nil
 }
 
-func (p *Aws) GetWindowsPassword(InstanceId string) (*ec2.GetPasswordDataOutput, error) {
+func (p *Aws) GetEc2WindowsPassword(InstanceId string) (*ec2.GetPasswordDataOutput, error) {
 	svc := ec2.New(p.Sess)
 	rt, err := svc.GetPasswordData(&ec2.GetPasswordDataInput{
 		InstanceId: &InstanceId})
@@ -267,7 +267,7 @@ func (p *Aws) GetWindowsPassword(InstanceId string) (*ec2.GetPasswordDataOutput,
 	return rt, nil
 }
 
-func (p *Aws) CreateKey(name string) (string, error) {
+func (p *Aws) CreateEc2SshKey(name string) (string, error) {
 	svc := ec2.New(p.Sess)
 	rt, err := svc.CreateKeyPair(&ec2.CreateKeyPairInput{KeyName: &name})
 	if err != nil {
@@ -276,7 +276,7 @@ func (p *Aws) CreateKey(name string) (string, error) {
 	return *rt.KeyMaterial, nil
 }
 
-func (p *Aws) ListKey() ([]*ec2.KeyPairInfo, error) {
+func (p *Aws) ListEc2SshKey() ([]*ec2.KeyPairInfo, error) {
 	svc := ec2.New(p.Sess)
 	rt, err := svc.DescribeKeyPairs(&ec2.DescribeKeyPairsInput{})
 	if err != nil {
@@ -285,7 +285,7 @@ func (p *Aws) ListKey() ([]*ec2.KeyPairInfo, error) {
 	return rt.KeyPairs, nil
 }
 
-func (p *Aws) DeleteKey(name string) error {
+func (p *Aws) DeleteEc2SshKey(name string) error {
 	svc := ec2.New(p.Sess)
 	_, err := svc.DeleteKeyPair(&ec2.DeleteKeyPairInput{KeyName: &name})
 	if err != nil {

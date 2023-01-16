@@ -8,7 +8,7 @@ import (
 )
 
 func CreateEc2(c *gin.Context) {
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -58,7 +58,7 @@ func CreateEc2(c *gin.Context) {
 }
 
 func ListEc2(c *gin.Context) {
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -91,7 +91,7 @@ func ListEc2(c *gin.Context) {
 }
 
 func GetEc2Info(c *gin.Context) {
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -123,7 +123,7 @@ func GetEc2Info(c *gin.Context) {
 }
 
 func ChangeEc2Ip(c *gin.Context) {
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -156,7 +156,7 @@ func ChangeEc2Ip(c *gin.Context) {
 }
 
 func StopEc2(c *gin.Context) {
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -188,7 +188,7 @@ func StopEc2(c *gin.Context) {
 }
 
 func StartEc2(c *gin.Context) {
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -219,7 +219,7 @@ func StartEc2(c *gin.Context) {
 }
 
 func RebootEc2(c *gin.Context) {
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -251,7 +251,7 @@ func RebootEc2(c *gin.Context) {
 }
 
 func DeleteEc2(c *gin.Context) {
-	username := GetLoginUser(c)
+	username := getLoginUser(c)
 	if username == "" {
 		return
 	}
@@ -280,4 +280,102 @@ func DeleteEc2(c *gin.Context) {
 			"msg":  delErr.Error(),
 		})
 	}
+}
+
+func CreateEc2SshKey(c *gin.Context) {
+	username := getLoginUser(c)
+	if username == "" {
+		return
+	}
+	params := GetAndCheckParams(c, "secretName", "region", "keyName")
+	if len(params) == 0 {
+		return
+	}
+	secret, _ := data.GetSecret(username, params["secretName"])
+	client, newErr := aws.New(params["region"], secret.SecretId, secret.Secret, "")
+	if newErr != nil {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  newErr.Error(),
+		})
+		return
+	}
+	key, err := client.CreateEc2SshKey(params["keyName"])
+	if err != nil {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  err.Error(),
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"code": 200,
+		"msg":  "创建成功",
+		"data": key,
+	})
+}
+
+func ListEc2SshKey(c *gin.Context) {
+	username := getLoginUser(c)
+	if username == "" {
+		return
+	}
+	params := GetAndCheckParams(c, "secretName", "region")
+	if len(params) == 0 {
+		return
+	}
+	secret, _ := data.GetSecret(username, params["secretName"])
+	client, newErr := aws.New(params["region"], secret.SecretId, secret.Secret, "")
+	if newErr != nil {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  newErr.Error(),
+		})
+		return
+	}
+	keys, err := client.ListEc2SshKey()
+	if err != nil {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  err.Error(),
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"code": 200,
+		"msg":  "获取成功",
+		"data": keys,
+	})
+}
+
+func DeleteEc2SshKey(c *gin.Context) {
+	username := getLoginUser(c)
+	if username == "" {
+		return
+	}
+	params := GetAndCheckParams(c, "secretName", "region", "keyName")
+	if len(params) == 0 {
+		return
+	}
+	secret, _ := data.GetSecret(username, params["secretName"])
+	client, newErr := aws.New(params["region"], secret.SecretId, secret.Secret, "")
+	if newErr != nil {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  newErr.Error(),
+		})
+		return
+	}
+	err := client.DeleteEc2SshKey(params["keyName"])
+	if err != nil {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  err.Error(),
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"code": 200,
+		"msg":  "删除成功",
+	})
 }

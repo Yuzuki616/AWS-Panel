@@ -11,7 +11,7 @@ type Config struct {
 	Password    string
 }
 
-func SaveMailConfig(host, email, password string, enable, port int) {
+func SaveConfig(host, email, password string, enable, port int) {
 	config := Config{}
 	config.EmailVerity = enable
 	config.MailHost = host
@@ -21,7 +21,7 @@ func SaveMailConfig(host, email, password string, enable, port int) {
 	Db.Save(&config)
 }
 
-func GetMailConfig() *Config {
+func GetConfig() *Config {
 	config := &Config{}
 	Db.First(config)
 	return config
