@@ -8,7 +8,7 @@ import (
 )
 
 func CreateEc2(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}
@@ -58,7 +58,7 @@ func CreateEc2(c *gin.Context) {
 }
 
 func ListEc2(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}
@@ -91,7 +91,7 @@ func ListEc2(c *gin.Context) {
 }
 
 func GetEc2Info(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}
@@ -123,7 +123,7 @@ func GetEc2Info(c *gin.Context) {
 }
 
 func ChangeEc2Ip(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}
@@ -156,7 +156,7 @@ func ChangeEc2Ip(c *gin.Context) {
 }
 
 func StopEc2(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}
@@ -188,7 +188,7 @@ func StopEc2(c *gin.Context) {
 }
 
 func StartEc2(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}
@@ -219,7 +219,7 @@ func StartEc2(c *gin.Context) {
 }
 
 func RebootEc2(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}
@@ -251,7 +251,7 @@ func RebootEc2(c *gin.Context) {
 }
 
 func DeleteEc2(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}
@@ -283,7 +283,7 @@ func DeleteEc2(c *gin.Context) {
 }
 
 func CreateEc2SshKey(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}
@@ -316,7 +316,7 @@ func CreateEc2SshKey(c *gin.Context) {
 }
 
 func ListEc2SshKey(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}
@@ -349,7 +349,7 @@ func ListEc2SshKey(c *gin.Context) {
 }
 
 func DeleteEc2SshKey(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}

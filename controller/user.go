@@ -227,7 +227,6 @@ func UnBanUser(c *gin.Context) {
 		})
 		return
 	}
-
 	c.JSON(200, gin.H{
 		"code": 200,
 		"msg":  "解封成功",
