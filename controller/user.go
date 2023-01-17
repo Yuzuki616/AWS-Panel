@@ -75,13 +75,9 @@ func Register(c *gin.Context) {
 }
 
 func ChangeUsername(c *gin.Context) {
-	username, _ := c.Get("username")
 	oldName := c.PostForm("oldUsername")
 	newName := c.PostForm("newUsername")
 	password := c.PostForm("password")
-	if username == "" {
-		return
-	}
 	err := data.ChangeUsername(oldName, newName, password)
 	Logout(c)
 	if err != nil {
@@ -98,7 +94,7 @@ func ChangeUsername(c *gin.Context) {
 }
 
 func ChangePassword(c *gin.Context) {
-	username, _ := c.Get("username")
+	username := c.GetString("username")
 	oldPassword := c.PostForm("oldPassword")
 	newPassword := c.PostForm("newPassword")
 	if oldPassword == "" || newPassword == "" {
@@ -107,10 +103,8 @@ func ChangePassword(c *gin.Context) {
 			"msg":  "信息填写不完整",
 		})
 	}
-	if username == "" {
-		return
-	}
-	changeErr := data.ChangeUserPassword(username.(string), oldPassword, newPassword)
+
+	changeErr := data.ChangeUserPassword(username, oldPassword, newPassword)
 	if changeErr == nil {
 		s := sessions.Default(c)
 		s.Clear()
@@ -128,10 +122,8 @@ func ChangePassword(c *gin.Context) {
 }
 
 func GetUserInfo(c *gin.Context) {
-	username, _ := c.Get("username")
-	if username == "" {
-		return
-	}
+	username := c.GetString("username")
+
 	c.JSON(200, gin.H{
 		"code": 200,
 		"msg":  "获取成功",
@@ -157,11 +149,9 @@ func Logout(c *gin.Context) {
 }
 
 func IsAdmin(c *gin.Context) {
-	username, _ := c.Get("username")
-	if username == "" {
-		return
-	}
-	if data.IsAdmin(username.(string)) {
+	username := c.GetString("username")
+
+	if data.IsAdmin(username) {
 		c.JSON(200, gin.H{
 			"code": 200,
 			"msg":  true,
@@ -176,27 +166,16 @@ func IsAdmin(c *gin.Context) {
 
 func DeleteUser(c *gin.Context) {
 	user := c.PostForm("username")
-	username, _ := c.Get("username")
-	if username == "" {
-		return
-	}
-	if data.IsAdmin(username.(string)) {
-		err := data.DeleteUser(user)
-		if err != nil {
-			c.JSON(400, gin.H{
-				"code": 400,
-				"msg":  err.Error(),
-			})
-		} else {
-			c.JSON(200, gin.H{
-				"code": 200,
-				"msg":  "删除成功",
-			})
-		}
+	err := data.DeleteUser(user)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  err.Error(),
+		})
 	} else {
-		c.JSON(403, gin.H{
-			"code": 403,
-			"msg":  "没有权限",
+		c.JSON(200, gin.H{
+			"code": 200,
+			"msg":  "删除成功",
 		})
 	}
 }

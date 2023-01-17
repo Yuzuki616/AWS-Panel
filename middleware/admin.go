@@ -12,5 +12,6 @@ func AdminCheck(c *gin.Context) {
 			"code": 403,
 			"msg":  "没有权限",
 		})
+		c.Abort()
 	}
 }

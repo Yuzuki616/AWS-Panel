@@ -14,6 +14,7 @@ func UserCheck(c *gin.Context) {
 			"code": 401,
 			"msg":  "用户未登录",
 		})
+		c.Abort()
 	}
 	username, _ := cache.Get(id.(string))
 	if username == "" {
@@ -21,6 +22,7 @@ func UserCheck(c *gin.Context) {
 			"code": 401,
 			"msg":  "用户未登录",
 		})
+		c.Abort()
 	}
 	c.Set("username", username)
 	return

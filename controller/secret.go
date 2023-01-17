@@ -8,12 +8,10 @@ import (
 func AddSecret(c *gin.Context) {
 	username := c.GetString("username")
 	params := GetAndCheckParams(c, "name", "id", "secret")
-	if len(params) == 0 {
+	if params == nil {
 		return
 	}
-	if username == "" {
-		return
-	}
+
 	addErr := data.AddSecret(username, params["name"], params["id"], params["secret"])
 	if addErr == nil {
 		c.JSON(200, gin.H{
@@ -31,9 +29,7 @@ func AddSecret(c *gin.Context) {
 
 func ListSecret(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	secret, listErr := data.ListSecret(username)
 	if listErr == nil {
 		var tmp []map[string]string
@@ -54,9 +50,7 @@ func ListSecret(c *gin.Context) {
 
 func GetSecretInfo(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	name := c.PostForm("name")
 	if name == "" {
 		c.JSON(200, gin.H{
@@ -81,9 +75,7 @@ func GetSecretInfo(c *gin.Context) {
 
 func DelSecret(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	name := c.PostForm("name")
 	if name == "" {
 		c.JSON(200, gin.H{

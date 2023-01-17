@@ -8,9 +8,7 @@ import (
 
 func GetRegions(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	secretName := c.PostForm("secretName")
 	if secretName == "" {
 		c.JSON(400, gin.H{
@@ -45,11 +43,9 @@ func GetRegions(c *gin.Context) {
 
 func CreateLightsail(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	params := GetAndCheckParams(c, "name", "zone", "availabilityZone", "blueprintId", "bundleId")
-	if len(params) == 0 {
+	if params == nil {
 		return
 	}
 	secret, _ := data.GetSecret(username, params["secretName"])
@@ -78,9 +74,7 @@ func CreateLightsail(c *gin.Context) {
 
 func OpenLightsailPorts(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	params := GetAndCheckParams(c, "zone", "secretName", "name")
 	secret, _ := data.GetSecret(username, params["secretName"])
 	client, newErr := aws.New(params["zone"], secret.SecretId, secret.Secret, "")
@@ -107,11 +101,9 @@ func OpenLightsailPorts(c *gin.Context) {
 
 func ListLightsail(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	params := GetAndCheckParams(c, "zone", "secretName")
-	if len(params) == 0 {
+	if params == nil {
 		return
 	}
 	secret, _ := data.GetSecret(username, params["secretName"])
@@ -146,9 +138,7 @@ func ListLightsail(c *gin.Context) {
 
 func GetLightsailInfo(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	params := GetAndCheckParams(c, "zone", "secretName", "name")
 	name := c.PostForm("name")
 	secret, _ := data.GetSecret(username, params["secretName"])
@@ -177,11 +167,9 @@ func GetLightsailInfo(c *gin.Context) {
 
 func StartLightsail(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	params := GetAndCheckParams(c, "zone", "secretName", "name")
-	if len(params) == 0 {
+	if params == nil {
 		return
 	}
 	secret, _ := data.GetSecret(username, params["secretName"])
@@ -209,11 +197,9 @@ func StartLightsail(c *gin.Context) {
 
 func StopLightsail(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	params := GetAndCheckParams(c, "zone", "secretName", "name")
-	if len(params) == 0 {
+	if params == nil {
 		return
 	}
 	secret, _ := data.GetSecret(username, params["secretName"])
@@ -241,11 +227,9 @@ func StopLightsail(c *gin.Context) {
 
 func RebootLightsail(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	params := GetAndCheckParams(c, "zone", "secretName", "name")
-	if len(params) == 0 {
+	if params == nil {
 		return
 	}
 	secret, _ := data.GetSecret(username, params["secretName"])
@@ -273,11 +257,9 @@ func RebootLightsail(c *gin.Context) {
 
 func ChangeLightsailIp(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	params := GetAndCheckParams(c, "zone", "secretName", "name")
-	if len(params) == 0 {
+	if params == nil {
 		return
 	}
 	secret, _ := data.GetSecret(username, params["secretName"])
@@ -305,11 +287,9 @@ func ChangeLightsailIp(c *gin.Context) {
 
 func DeleteLightsail(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	params := GetAndCheckParams(c, "secretName", "zone", "name", "resourceName")
-	if len(params) == 0 {
+	if params == nil {
 		return
 	}
 	secret, _ := data.GetSecret(username, params["secretName"])

@@ -9,12 +9,10 @@ import (
 
 func CreateEc2(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	userdata := c.PostForm("userdata")
 	params := GetAndCheckParams(c, "secretName", "region", "ami", "ec2Type", "ec2Name", "disk")
-	if len(params) == 0 {
+	if params == nil {
 		return
 	}
 	disk, _ := strconv.ParseInt(params["disk"], 10, 64)
@@ -59,11 +57,9 @@ func CreateEc2(c *gin.Context) {
 
 func ListEc2(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	params := GetAndCheckParams(c, "secretName", "region")
-	if len(params) == 0 {
+	if params == nil {
 		return
 	}
 	secret, _ := data.GetSecret(username, params["secretName"])
@@ -92,11 +88,9 @@ func ListEc2(c *gin.Context) {
 
 func GetEc2Info(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	params := GetAndCheckParams(c, "secretName", "region", "ec2Id")
-	if len(params) == 0 {
+	if params == nil {
 		return
 	}
 	secret, _ := data.GetSecret(username, params["secretName"])
@@ -124,11 +118,9 @@ func GetEc2Info(c *gin.Context) {
 
 func ChangeEc2Ip(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	params := GetAndCheckParams(c, "secretName", "region", "ec2Id")
-	if len(params) == 0 {
+	if params == nil {
 		return
 	}
 	secret, _ := data.GetSecret(username, params["secretName"])
@@ -157,11 +149,9 @@ func ChangeEc2Ip(c *gin.Context) {
 
 func StopEc2(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	params := GetAndCheckParams(c, "secretName", "region", "ec2Id")
-	if len(params) == 0 {
+	if params == nil {
 		return
 	}
 	secret, _ := data.GetSecret(username, params["secretName"])
@@ -189,11 +179,9 @@ func StopEc2(c *gin.Context) {
 
 func StartEc2(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	params := GetAndCheckParams(c, "secretName", "region", "ec2Id")
-	if len(params) == 0 {
+	if params == nil {
 		return
 	}
 	secret, _ := data.GetSecret(username, params["secretName"])
@@ -220,11 +208,9 @@ func StartEc2(c *gin.Context) {
 
 func RebootEc2(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	params := GetAndCheckParams(c, "secretName", "region", "ec2Id")
-	if len(params) == 0 {
+	if params == nil {
 		return
 	}
 	secret, _ := data.GetSecret(username, params["secretName"])
@@ -252,11 +238,9 @@ func RebootEc2(c *gin.Context) {
 
 func DeleteEc2(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	params := GetAndCheckParams(c, "secretName", "region", "ec2Id")
-	if len(params) == 0 {
+	if params == nil {
 		return
 	}
 	secret, _ := data.GetSecret(username, params["secretName"])
@@ -284,11 +268,9 @@ func DeleteEc2(c *gin.Context) {
 
 func CreateEc2SshKey(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	params := GetAndCheckParams(c, "secretName", "region", "keyName")
-	if len(params) == 0 {
+	if params == nil {
 		return
 	}
 	secret, _ := data.GetSecret(username, params["secretName"])
@@ -317,11 +299,9 @@ func CreateEc2SshKey(c *gin.Context) {
 
 func ListEc2SshKey(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	params := GetAndCheckParams(c, "secretName", "region")
-	if len(params) == 0 {
+	if params == nil {
 		return
 	}
 	secret, _ := data.GetSecret(username, params["secretName"])
@@ -350,11 +330,9 @@ func ListEc2SshKey(c *gin.Context) {
 
 func DeleteEc2SshKey(c *gin.Context) {
 	username := c.GetString("username")
-	if username == "" {
-		return
-	}
+
 	params := GetAndCheckParams(c, "secretName", "region", "keyName")
-	if len(params) == 0 {
+	if params == nil {
 		return
 	}
 	secret, _ := data.GetSecret(username, params["secretName"])
