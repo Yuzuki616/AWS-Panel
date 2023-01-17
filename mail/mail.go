@@ -1,6 +1,7 @@
 package mail
 
 import (
+	"github.com/Yuzuki616/Aws-Panel/conf"
 	"gopkg.in/gomail.v2"
 	"strings"
 )
@@ -9,8 +10,9 @@ const tmpl = "<div style=\"background: #eee\">\n    <table width=\"600\" border=
 
 var mail *gomail.Dialer
 
-func InitMail(host, username, password string, port int) {
-	mail = gomail.NewDialer(host, port, username, password)
+func init() {
+	c := conf.Config.MailConfig
+	mail = gomail.NewDialer(c.Host, c.Port, c.Email, c.Password)
 }
 
 func SendMail(form, to, code string) error {

@@ -1,22 +1,12 @@
 package controller
 
 import (
+	"github.com/Yuzuki616/Aws-Panel/cache"
+	"github.com/Yuzuki616/Aws-Panel/conf"
 	"github.com/Yuzuki616/Aws-Panel/data"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
-
-func getLoginUser(c *gin.Context) string {
-	username, _ := cacheClient.Get(getSessionId(c))
-	if username == "" {
-		c.JSON(401, gin.H{
-			"code": 401,
-			"msg":  "用户未登录",
-		})
-		return ""
-	}
-	return username.(string)
-}
 
 func LoginVerify(c *gin.Context) {
 	username := c.PostForm("username")
@@ -60,9 +50,9 @@ func Register(c *gin.Context) {
 			"msg":  "信息填写不完整",
 		})
 	}
-	if data.IsEmailVerity() {
+	if conf.Config.EnableMailVerify {
 		code := c.PostForm("code")
-		if savedCode, e := cacheClient.Get(email + "|code"); !e || savedCode.(string) != code {
+		if savedCode, e := cache.Get(email + "|code"); !e || savedCode.(string) != code {
 			c.JSON(400, gin.H{
 				"code": 400,
 				"msg":  "验证码不正确或已失效",
@@ -85,7 +75,7 @@ func Register(c *gin.Context) {
 }
 
 func ChangeUsername(c *gin.Context) {
-	username := getLoginUser(c)
+	username, _ := c.Get("username")
 	oldName := c.PostForm("oldUsername")
 	newName := c.PostForm("newUsername")
 	password := c.PostForm("password")
@@ -108,7 +98,7 @@ func ChangeUsername(c *gin.Context) {
 }
 
 func ChangePassword(c *gin.Context) {
-	username := getLoginUser(c)
+	username, _ := c.Get("username")
 	oldPassword := c.PostForm("oldPassword")
 	newPassword := c.PostForm("newPassword")
 	if oldPassword == "" || newPassword == "" {
@@ -120,7 +110,7 @@ func ChangePassword(c *gin.Context) {
 	if username == "" {
 		return
 	}
-	changeErr := data.ChangeUserPassword(username, oldPassword, newPassword)
+	changeErr := data.ChangeUserPassword(username.(string), oldPassword, newPassword)
 	if changeErr == nil {
 		s := sessions.Default(c)
 		s.Clear()
@@ -138,7 +128,7 @@ func ChangePassword(c *gin.Context) {
 }
 
 func GetUserInfo(c *gin.Context) {
-	username := getLoginUser(c)
+	username, _ := c.Get("username")
 	if username == "" {
 		return
 	}
@@ -150,8 +140,9 @@ func GetUserInfo(c *gin.Context) {
 }
 
 func Logout(c *gin.Context) {
-	id := getSessionId(c)
-	err := delLoginSession(c, id)
+	s := sessions.Default(c)
+	id := s.Get("loginSession")
+	err := delLoginSession(c, id.(string))
 	if err != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -166,11 +157,11 @@ func Logout(c *gin.Context) {
 }
 
 func IsAdmin(c *gin.Context) {
-	username := getLoginUser(c)
+	username, _ := c.Get("username")
 	if username == "" {
 		return
 	}
-	if data.IsAdmin(username) {
+	if data.IsAdmin(username.(string)) {
 		c.JSON(200, gin.H{
 			"code": 200,
 			"msg":  true,
@@ -185,11 +176,11 @@ func IsAdmin(c *gin.Context) {
 
 func DeleteUser(c *gin.Context) {
 	user := c.PostForm("username")
-	username := getLoginUser(c)
+	username, _ := c.Get("username")
 	if username == "" {
 		return
 	}
-	if data.IsAdmin(username) {
+	if data.IsAdmin(username.(string)) {
 		err := data.DeleteUser(user)
 		if err != nil {
 			c.JSON(400, gin.H{
@@ -212,63 +203,38 @@ func DeleteUser(c *gin.Context) {
 
 func BanUser(c *gin.Context) {
 	user := c.PostForm("username")
-	username := getLoginUser(c)
-	if username == "" {
+	err := data.BanUser(user)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  err.Error(),
+		})
 		return
 	}
-	if data.IsAdmin(username) {
-		err := data.BanUser(user)
-		if err != nil {
-			c.JSON(400, gin.H{
-				"code": 400,
-				"msg":  err.Error(),
-			})
-		} else {
-			c.JSON(200, gin.H{
-				"code": 200,
-				"msg":  "封禁成功",
-			})
-		}
-	} else {
-		c.JSON(403, gin.H{
-			"code": 403,
-			"msg":  "没有权限",
-		})
-	}
+	c.JSON(200, gin.H{
+		"code": 200,
+		"msg":  "封禁成功",
+	})
 }
 
 func UnBanUser(c *gin.Context) {
 	user := c.PostForm("username")
-	username := getLoginUser(c)
-	if username == "" {
+	err := data.UnBanUser(user)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  err.Error(),
+		})
 		return
 	}
-	if data.IsAdmin(username) {
-		err := data.UnBanUser(user)
-		if err != nil {
-			c.JSON(400, gin.H{
-				"code": 400,
-				"msg":  err.Error(),
-			})
-		} else {
-			c.JSON(200, gin.H{
-				"code": 200,
-				"msg":  "解封成功",
-			})
-		}
-	} else {
-		c.JSON(403, gin.H{
-			"code": 403,
-			"msg":  "没有权限",
-		})
-	}
+
+	c.JSON(200, gin.H{
+		"code": 200,
+		"msg":  "解封成功",
+	})
 }
 
 func GetUserList(c *gin.Context) {
-	username := getLoginUser(c)
-	if username == "" {
-		return
-	}
 	list, listErr := data.GetUserList()
 	if listErr != nil {
 		c.JSON(400, gin.H{

@@ -7,7 +7,7 @@ import (
 )
 
 func GetRegions(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}
@@ -44,7 +44,7 @@ func GetRegions(c *gin.Context) {
 }
 
 func CreateLightsail(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}
@@ -77,7 +77,7 @@ func CreateLightsail(c *gin.Context) {
 }
 
 func OpenLightsailPorts(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}
@@ -106,7 +106,7 @@ func OpenLightsailPorts(c *gin.Context) {
 }
 
 func ListLightsail(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}
@@ -145,7 +145,7 @@ func ListLightsail(c *gin.Context) {
 }
 
 func GetLightsailInfo(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}
@@ -176,7 +176,7 @@ func GetLightsailInfo(c *gin.Context) {
 }
 
 func StartLightsail(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}
@@ -208,7 +208,7 @@ func StartLightsail(c *gin.Context) {
 }
 
 func StopLightsail(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}
@@ -240,7 +240,7 @@ func StopLightsail(c *gin.Context) {
 }
 
 func RebootLightsail(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}
@@ -272,7 +272,7 @@ func RebootLightsail(c *gin.Context) {
 }
 
 func ChangeLightsailIp(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}
@@ -304,7 +304,7 @@ func ChangeLightsailIp(c *gin.Context) {
 }
 
 func DeleteLightsail(c *gin.Context) {
-	username := getLoginUser(c)
+	username := c.GetString("username")
 	if username == "" {
 		return
 	}

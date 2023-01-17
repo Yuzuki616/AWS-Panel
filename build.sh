@@ -1,6 +1,8 @@
 mkdir tmp
 CGO_ENABLED=1 go build
 mv Aws-Panel tmp/
+cp ./example/config.json tmp/
+cp LICENSE tmp/
 cd ./web/
 npm install
 npm run build
