@@ -19,8 +19,8 @@ type LsInfo struct {
 	Key          string
 }
 
-func (p *Aws) GetBlueprintId() (*lightsail.GetBlueprintsOutput, error) {
-	svc := lightsail.New(p.Sess)
+func (a *Aws) GetBlueprintId() (*lightsail.GetBlueprintsOutput, error) {
+	svc := lightsail.New(a.Sess)
 	blueID, blueErr := svc.GetBlueprints(&lightsail.GetBlueprintsInput{})
 	if blueErr != nil {
 		return nil, blueErr
@@ -28,8 +28,8 @@ func (p *Aws) GetBlueprintId() (*lightsail.GetBlueprintsOutput, error) {
 	return blueID, nil
 }
 
-func (p *Aws) GetRegions() ([]*lightsail.Region, error) {
-	svc := lightsail.New(p.Sess)
+func (a *Aws) GetRegions() ([]*lightsail.Region, error) {
+	svc := lightsail.New(a.Sess)
 	regions, regErr := svc.GetRegions(&lightsail.GetRegionsInput{
 		IncludeAvailabilityZones: aws.Bool(true),
 	})
@@ -39,8 +39,8 @@ func (p *Aws) GetRegions() ([]*lightsail.Region, error) {
 	return regions.Regions, nil
 }
 
-func (p *Aws) CreateLs(Name string, AvailabilityZone string, BlueprintId string, BundleId string) (*LsInfo, error) {
-	svc := lightsail.New(p.Sess)
+func (a *Aws) CreateLs(Name string, AvailabilityZone string, BlueprintId string, BundleId string) (*LsInfo, error) {
+	svc := lightsail.New(a.Sess)
 	dateName := Name + time.Unix(time.Now().Unix(), 0).
 		Format(AvailabilityZone+"2006_01_02_15_04_05_"+strconv.Itoa(rand.Intn(1000)))
 	key, keyErr := svc.CreateKeyPair(&lightsail.CreateKeyPairInput{
@@ -83,8 +83,8 @@ func (p *Aws) CreateLs(Name string, AvailabilityZone string, BlueprintId string,
 	}, nil
 }
 
-func (p *Aws) OpenLsPorts(Name string) error {
-	svc := lightsail.New(p.Sess)
+func (a *Aws) OpenLsPorts(Name string) error {
+	svc := lightsail.New(a.Sess)
 	_, err := svc.OpenInstancePublicPorts(&lightsail.OpenInstancePublicPortsInput{
 		InstanceName: aws.String(Name),
 		PortInfo: &lightsail.PortInfo{
@@ -108,8 +108,8 @@ func getResourceNameFromTags(tags []*lightsail.Tag) string {
 	return ""
 }
 
-func (p *Aws) GetLsInfo(Name string) (*LsInfo, error) {
-	svc := lightsail.New(p.Sess)
+func (a *Aws) GetLsInfo(Name string) (*LsInfo, error) {
+	svc := lightsail.New(a.Sess)
 	rt, err := svc.GetInstance(&lightsail.GetInstanceInput{
 		InstanceName: aws.String(Name)})
 	if err != nil {
@@ -123,8 +123,8 @@ func (p *Aws) GetLsInfo(Name string) (*LsInfo, error) {
 	}, nil
 }
 
-func (p *Aws) ListLs() ([]*lightsail.Instance, error) {
-	svc := lightsail.New(p.Sess)
+func (a *Aws) ListLs() ([]*lightsail.Instance, error) {
+	svc := lightsail.New(a.Sess)
 	rt, err := svc.GetInstances(&lightsail.GetInstancesInput{})
 	if err != nil {
 		return nil, err
@@ -142,8 +142,8 @@ func (p *Aws) ListLs() ([]*lightsail.Instance, error) {
 	return rt.Instances, nil
 }
 
-func (p *Aws) getAndDeleteIpName(svc *lightsail.Lightsail, Name string) (string, error) {
-	info, getErr := p.GetLsInfo(Name)
+func (a *Aws) getAndDeleteIpName(svc *lightsail.Lightsail, Name string) (string, error) {
+	info, getErr := a.GetLsInfo(Name)
 	if getErr != nil {
 		return "", fmt.Errorf("get ls info error: %v", getErr)
 	}
@@ -191,9 +191,9 @@ func (p *Aws) getAndDeleteIpName(svc *lightsail.Lightsail, Name string) (string,
 	return "", nil
 }
 
-func (p *Aws) ChangeLsIp(Name string) error {
-	svc := lightsail.New(p.Sess)
-	ipName, err := p.getAndDeleteIpName(svc, Name)
+func (a *Aws) ChangeLsIp(Name string) error {
+	svc := lightsail.New(a.Sess)
+	ipName, err := a.getAndDeleteIpName(svc, Name)
 	if err != nil {
 		return err
 	}
@@ -212,8 +212,8 @@ func (p *Aws) ChangeLsIp(Name string) error {
 	return nil
 }
 
-func (p *Aws) StopLs(Name string) error {
-	svc := lightsail.New(p.Sess)
+func (a *Aws) StopLs(Name string) error {
+	svc := lightsail.New(a.Sess)
 	_, err := svc.StopInstance(&lightsail.StopInstanceInput{
 		InstanceName: aws.String(Name)})
 	if err != nil {
@@ -222,8 +222,8 @@ func (p *Aws) StopLs(Name string) error {
 	return nil
 }
 
-func (p *Aws) StartLs(Name string) error {
-	svc := lightsail.New(p.Sess)
+func (a *Aws) StartLs(Name string) error {
+	svc := lightsail.New(a.Sess)
 	_, err := svc.StartInstance(&lightsail.StartInstanceInput{
 		InstanceName: &Name})
 	if err != nil {
@@ -232,8 +232,8 @@ func (p *Aws) StartLs(Name string) error {
 	return nil
 }
 
-func (p *Aws) RebootLs(Name string) error {
-	svc := lightsail.New(p.Sess)
+func (a *Aws) RebootLs(Name string) error {
+	svc := lightsail.New(a.Sess)
 	_, err := svc.RebootInstance(&lightsail.RebootInstanceInput{
 		InstanceName: &Name})
 	if err != nil {
@@ -242,9 +242,9 @@ func (p *Aws) RebootLs(Name string) error {
 	return nil
 }
 
-func (p *Aws) DeleteLs(Name string, ResourceName string) error {
-	svc := lightsail.New(p.Sess)
-	_, err := p.getAndDeleteIpName(svc, Name)
+func (a *Aws) DeleteLs(Name string, ResourceName string) error {
+	svc := lightsail.New(a.Sess)
+	_, err := a.getAndDeleteIpName(svc, Name)
 	if err != nil {
 		return err
 	}

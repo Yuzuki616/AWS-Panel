@@ -22,9 +22,10 @@ func addLoginSession(c *gin.Context, username string) error {
 	return nil
 }
 
-func delLoginSession(c *gin.Context, sessionId string) error {
-	cache.Delete(sessionId)
+func delLoginSession(c *gin.Context) error {
 	s := sessions.Default(c)
+	id := s.Get("loginSession")
+	cache.Delete(id.(string))
 	s.Delete("loginSession")
 	err := s.Save()
 	if err != nil {

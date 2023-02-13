@@ -4,20 +4,23 @@ import (
 	"github.com/Yuzuki616/Aws-Panel/cache"
 	"github.com/Yuzuki616/Aws-Panel/conf"
 	"github.com/Yuzuki616/Aws-Panel/data"
-	"github.com/gin-contrib/sessions"
+	"github.com/Yuzuki616/Aws-Panel/mail"
+	"github.com/Yuzuki616/Aws-Panel/request"
+	"github.com/Yuzuki616/Aws-Panel/utils"
 	"github.com/gin-gonic/gin"
+	"time"
 )
 
-func LoginVerify(c *gin.Context) {
-	username := c.PostForm("username")
-	password := c.PostForm("password")
-	if username == "" || password == "" {
+func Login(c *gin.Context) {
+	params := &request.Login{}
+	if err := c.ShouldBind(params); err != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
-			"msg":  "信息填写不完整",
+			"msg":  err.Error(),
 		})
+		return
 	}
-	err := data.VerifyUser(username, password)
+	err := data.VerifyUser(params.Username, params.Password)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -25,7 +28,7 @@ func LoginVerify(c *gin.Context) {
 		})
 		return
 	}
-	err = addLoginSession(c, username)
+	err = addLoginSession(c, params.Username)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -35,24 +38,63 @@ func LoginVerify(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{
 		"code":    200,
-		"isAdmin": data.IsAdmin(username),
+		"isAdmin": data.IsAdmin(params.Username),
 		"msg":     "登录成功",
 	})
 }
 
-func Register(c *gin.Context) {
-	username := c.PostForm("username")
-	email := c.PostForm("email")
-	password := c.PostForm("password")
-	if username == "" || password == "" {
+func SendMailVerify(c *gin.Context) {
+	p := request.SendMailVerify{}
+	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
-			"msg":  "信息填写不完整",
+			"msg":  err.Error(),
 		})
+		return
+	}
+	if !conf.Config.EnableMailVerify {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  "未开启邮箱验证",
+		})
+		return
+	}
+	if _, e := cache.Get(p.Email + "|codeLimit"); e {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  "发送间隔太短，请稍后再试",
+		})
+		return
+	}
+	code := utils.GenRandomString(6)
+	cache.Set(p.Email+"|code", code, time.Minute*5)
+	cache.Set(p.Email+"|codeLimit", nil, time.Second*60)
+	sendErr := mail.SendMail(p.Email, code)
+	if sendErr != nil {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  "发送失败",
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"code": 200,
+		"msg":  "发送成功",
+	})
+}
+
+func Register(c *gin.Context) {
+	params := &request.Register{}
+	if err := c.ShouldBind(params); err != nil {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  err.Error(),
+		})
+		return
 	}
 	if conf.Config.EnableMailVerify {
 		code := c.PostForm("code")
-		if savedCode, e := cache.Get(email + "|code"); !e || savedCode.(string) != code {
+		if savedCode, e := cache.Get(code + "|code"); !e || savedCode.(string) != code {
 			c.JSON(400, gin.H{
 				"code": 400,
 				"msg":  "验证码不正确或已失效",
@@ -60,70 +102,76 @@ func Register(c *gin.Context) {
 			return
 		}
 	}
-	registerErr := data.CreateUser(username, email, password, 0)
-	if registerErr == nil {
-		c.JSON(200, gin.H{
-			"code": 200,
-			"msg":  "注册成功",
-		})
-	} else {
+	registerErr := data.CreateUser(params.Username, params.Email, params.Password, 0)
+	if registerErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  registerErr.Error(),
 		})
+		return
 	}
+	c.JSON(200, gin.H{
+		"code": 200,
+		"msg":  "注册成功",
+	})
 }
 
 func ChangeUsername(c *gin.Context) {
-	oldName := c.PostForm("oldUsername")
-	newName := c.PostForm("newUsername")
-	password := c.PostForm("password")
-	err := data.ChangeUsername(oldName, newName, password)
-	Logout(c)
+	params := &request.ChangeUsername{}
+	if err := c.ShouldBind(params); err != nil {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  err.Error(),
+		})
+		return
+	}
+	err := data.ChangeUsername(params.OldUsername, params.NewUsername, params.Password)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  err.Error(),
 		})
-	} else {
-		c.JSON(200, gin.H{
-			"code": 200,
-			"msg":  "修改成功",
-		})
+		return
 	}
+	Logout(c)
+	if c.IsAborted() {
+		return
+	}
+	c.JSON(200, gin.H{
+		"code": 200,
+		"msg":  "修改成功",
+	})
 }
 
 func ChangePassword(c *gin.Context) {
 	username := c.GetString("username")
-	oldPassword := c.PostForm("oldPassword")
-	newPassword := c.PostForm("newPassword")
-	if oldPassword == "" || newPassword == "" {
+	params := &request.ChangePassword{}
+	if err := c.ShouldBind(params); err != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
-			"msg":  "信息填写不完整",
+			"msg":  err.Error(),
 		})
+		return
 	}
-
-	changeErr := data.ChangeUserPassword(username, oldPassword, newPassword)
-	if changeErr == nil {
-		s := sessions.Default(c)
-		s.Clear()
-		_ = s.Save()
-		c.JSON(200, gin.H{
-			"code": 200,
-			"msg":  "修改成功",
-		})
-	} else {
+	changeErr := data.ChangeUserPassword(username, params.OldPassword, params.NewPassword)
+	if changeErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  changeErr.Error(),
 		})
 	}
+	Logout(c)
+	if c.IsAborted() {
+		return
+	}
+	c.JSON(200, gin.H{
+		"code": 200,
+		"msg":  "修改成功",
+	})
 }
 
 func GetUserInfo(c *gin.Context) {
 	username := c.GetString("username")
-
 	c.JSON(200, gin.H{
 		"code": 200,
 		"msg":  "获取成功",
@@ -132,14 +180,13 @@ func GetUserInfo(c *gin.Context) {
 }
 
 func Logout(c *gin.Context) {
-	s := sessions.Default(c)
-	id := s.Get("loginSession")
-	err := delLoginSession(c, id.(string))
+	err := delLoginSession(c)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  err.Error(),
 		})
+		c.Abort()
 		return
 	}
 	c.JSON(200, gin.H{
@@ -150,7 +197,6 @@ func Logout(c *gin.Context) {
 
 func IsAdmin(c *gin.Context) {
 	username := c.GetString("username")
-
 	if data.IsAdmin(username) {
 		c.JSON(200, gin.H{
 			"code": 200,
@@ -165,24 +211,38 @@ func IsAdmin(c *gin.Context) {
 }
 
 func DeleteUser(c *gin.Context) {
-	user := c.PostForm("username")
-	err := data.DeleteUser(user)
+	params := &request.DeleteUser{}
+	if err := c.ShouldBind(params); err != nil {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  err.Error(),
+		})
+		return
+	}
+	err := data.DeleteUser(params.Username)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  err.Error(),
 		})
-	} else {
-		c.JSON(200, gin.H{
-			"code": 200,
-			"msg":  "删除成功",
-		})
+		return
 	}
+	c.JSON(200, gin.H{
+		"code": 200,
+		"msg":  "删除成功",
+	})
 }
 
 func BanUser(c *gin.Context) {
-	user := c.PostForm("username")
-	err := data.BanUser(user)
+	params := &request.BanUser{}
+	if err := c.ShouldBind(params); err != nil {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  err.Error(),
+		})
+		return
+	}
+	err := data.BanUser(params.Username)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -197,8 +257,15 @@ func BanUser(c *gin.Context) {
 }
 
 func UnBanUser(c *gin.Context) {
-	user := c.PostForm("username")
-	err := data.UnBanUser(user)
+	params := &request.BanUser{}
+	if err := c.ShouldBind(params); err != nil {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  err.Error(),
+		})
+		return
+	}
+	err := data.UnBanUser(params.Username)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"code": 400,

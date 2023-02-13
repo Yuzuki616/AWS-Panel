@@ -15,8 +15,8 @@ type AgaInfo struct {
 	Port     []*aga.PortOverride
 }
 
-func (p *Aws) CreateAga(Name string, Region string, InstanceId string) (*AgaInfo, error) {
-	svc := aga.New(p.Sess)
+func (a *Aws) CreateAga(Name string, Region string, InstanceId string) (*AgaInfo, error) {
+	svc := aga.New(a.Sess)
 	IdempotencyToken := time.Unix(time.Now().Unix(), 0).Format("2006-01-02_15:04:05")
 	createAccRt, createAccErr := svc.CreateAccelerator(&aga.CreateAcceleratorInput{
 		Name:             aws.String(Name),
@@ -63,8 +63,8 @@ func (p *Aws) CreateAga(Name string, Region string, InstanceId string) (*AgaInfo
 	}, nil
 }
 
-func (p *Aws) ListAga() ([]*aga.Accelerator, error) {
-	svc := aga.New(p.Sess)
+func (a *Aws) ListAga() ([]*aga.Accelerator, error) {
+	svc := aga.New(a.Sess)
 	rt, err := svc.ListAccelerators(&aga.ListAcceleratorsInput{})
 	if err != nil {
 		return nil, err
@@ -97,8 +97,8 @@ func (p *Aws) ListAga() ([]*aga.Accelerator, error) {
 	}, nil
 }*/
 
-func (p *Aws) DeleteAga(AcceleratorArn string) error {
-	svc := aga.New(p.Sess)
+func (a *Aws) DeleteAga(AcceleratorArn string) error {
+	svc := aga.New(a.Sess)
 	_, updateErr := svc.UpdateAccelerator(&aga.UpdateAcceleratorInput{
 		AcceleratorArn: aws.String(AcceleratorArn),
 		Enabled:        aws.Bool(false),

@@ -163,7 +163,7 @@
                     <template slot="no-data">
                       <div>无任何实例</div>
                     </template>
-                    <template v-slot:item.Action="{ item }">
+                    <template>
                       <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
                           <v-btn
@@ -208,7 +208,6 @@
                         </template>
                         <span>重启</span>
                       </v-tooltip>
-
                       <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
                           <v-btn
@@ -266,11 +265,11 @@
 </template>
 
 <script>
-import axios from "../api"
+import axios from "../utils/api"
 import Lightsail from "../components/lightsail";
 
 export default {
-  name: 'Instances',
+  name: 'instancesPage',
   components: {Lightsail},
   metaInfo: {
     title: '实例 - AWS Panel',
@@ -423,11 +422,11 @@ export default {
                 this.messageText = '已添加至创建队列！'
                 this.sshKey = response.data.data
               }
-            }).catch(rsp =>{
+            }).catch(rsp => {
               if (rsp.response.data.msg !== undefined) {
-            console.error(rsp.response.data.msg)
-          }
-              this.messageText="操作失败"
+                console.error(rsp.response.data.msg)
+              }
+              this.messageText = "操作失败"
             }).finally(() => {
               this.$refs.createForm.reset()
               this.loading = false
@@ -457,11 +456,11 @@ export default {
                 this.messageText = '已添加至启动队列！'
                 this.refresh()
               }
-            }).catch(rsp =>{
+            }).catch(rsp => {
               if (rsp.response.data.msg !== undefined) {
-            console.error(rsp.response.data.msg)
-          }
-              this.messageText="操作失败"
+                console.error(rsp.response.data.msg)
+              }
+              this.messageText = "操作失败"
             }).finally(() => {
               this.loading = false
               this.message = true
@@ -480,14 +479,14 @@ export default {
                 this.messageText = '已添加至停止队列！'
                 this.refresh()
               }
-            }).catch(rsp =>{
+            }).catch(rsp => {
               if (rsp.response.data.msg !== undefined) {
-            console.error(rsp.response.data.msg)
-          }
-              this.messageText="操作失败"
+                console.error(rsp.response.data.msg)
+              }
+              this.messageText = "操作失败"
             }).finally(() => {
               this.loading = false
-              this.message=true
+              this.message = true
             })
           }
         },
@@ -503,13 +502,13 @@ export default {
                 this.messageText = '已添加至重启队列！'
                 this.refresh()
               }
-            }).catch(rsp =>{
+            }).catch(rsp => {
               if (rsp.response.data.msg !== undefined) {
-            console.error(rsp.response.data.msg)
-          }
-              this.messageText="操作失败"
+                console.error(rsp.response.data.msg)
+              }
+              this.messageText = "操作失败"
             }).finally(() => {
-              this.message=true
+              this.message = true
               this.loading = false
             })
           }
@@ -526,19 +525,17 @@ export default {
                 this.messageText = '已添加至删除队列！'
                 this.refresh()
               }
-            }).catch(rsp =>{
+            }).catch(rsp => {
               if (rsp.response.data.msg !== undefined) {
-            console.error(rsp.response.data.msg)
-          }
-              this.messageText="操作失败"
+                console.error(rsp.response.data.msg)
+              }
+              this.messageText = "操作失败"
             }).finally(() => {
-              this.message=true
+              this.message = true
               this.loading = false
             })
           }
         },
       },
 }
-
-
 </script>

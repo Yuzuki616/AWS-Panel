@@ -252,7 +252,7 @@
 import axios from "axios"
 
 export default {
-  name: 'lightsail',
+  name: 'lightsailPage',
   props: ['loading', 'message', 'messageText'],
   data() {
     return {

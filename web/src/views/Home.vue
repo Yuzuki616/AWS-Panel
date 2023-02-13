@@ -58,7 +58,7 @@
 
 <script>
 export default {
-  name: 'Home',
+  name: 'homePage',
   metaInfo: {
     title: '主页 - AWS Panel',
   },

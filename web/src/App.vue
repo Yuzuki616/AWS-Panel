@@ -88,7 +88,7 @@
 </template>
 
 <script>
-import axios from './api'
+import axios from './utils/api'
 export default {
   name: 'App',
   data: () => ({

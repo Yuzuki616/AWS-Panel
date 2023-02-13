@@ -60,10 +60,10 @@
 </template>
 
 <script>
-import axios from "../api";
+import axios from "../utils/api";
 
 export default {
-  name: "login",
+  name: "loginPage",
   metaInfo: {
     title: '登陆 - AWS Panel',
   },

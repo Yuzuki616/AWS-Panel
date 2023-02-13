@@ -8,27 +8,27 @@ import (
 	"path"
 )
 
-func (p *Router) LoadNormalRoute() {
+func LoadNormalRoute() {
 	if conf.Config.EnableLoadStatic {
 		//Page
-		p.router.Static("/js", path.Join(conf.Config.StaticPath, "js"))
-		p.router.Static("/css", path.Join(conf.Config.StaticPath, "css"))
-		p.router.Static("/img", path.Join(conf.Config.StaticPath, "img"))
-		//p.router.StaticFile("/","./web/index.html")
-		p.router.StaticFile("/favicon.ico", path.Join(conf.Config.StaticPath, "favicon.ico"))
-		p.router.NoRoute(func(c *gin.Context) {
+		engine.Static("/js", path.Join(conf.Config.StaticPath, "js"))
+		engine.Static("/css", path.Join(conf.Config.StaticPath, "css"))
+		engine.Static("/img", path.Join(conf.Config.StaticPath, "img"))
+		//engine.StaticFile("/","./web/index.html")
+		engine.StaticFile("/favicon.ico", path.Join(conf.Config.StaticPath, "favicon.ico"))
+		engine.NoRoute(func(c *gin.Context) {
 			c.File(path.Join(conf.Config.StaticPath, "index.html"))
 		})
 	}
-	p.router.GET("/api/v1/Config/IsEnableEmailVerify", controller.IsEnableEmailVerify)
-	p.router.POST("/api/v1/User/Login", controller.LoginVerify)
-	p.router.POST("/api/v1/User/Register", controller.Register)
+	engine.GET("/api/v1/Config/IsEnableEmailVerify", controller.IsEnableEmailVerify)
+	engine.POST("/api/v1/User/SendMailVerify", controller.SendMailVerify)
+	engine.POST("/api/v1/User/Login", controller.Login)
+	engine.POST("/api/v1/User/Register", controller.Register)
 }
 
-func (p *Router) LoadUserRoute() {
-	user := p.router.Group("/api/v1/")
+func LoadUserRoute() {
+	user := engine.Group("/api/v1/")
 	user.Use(middleware.UserCheck)
-	user.POST("User/SendMailVerify", controller.SendMailVerify)
 	user.POST("User/ChangeUsername", controller.ChangeUsername)
 	user.POST("User/ChangePassword", controller.ChangePassword)
 	user.GET("User/Info", controller.GetUserInfo)
@@ -38,7 +38,7 @@ func (p *Router) LoadUserRoute() {
 	user.POST("Secret/Add", controller.AddSecret)
 	user.GET("Secret/List", controller.ListSecret)
 	user.POST("Secret/Delete", controller.DelSecret)
-	user.POST("Secret/Info", controller.GetSecretInfo)
+	user.POST("Secret/Info", controller.GetSecret)
 	//Ec2
 	user.POST("Ec2/Create", controller.CreateEc2)
 	user.POST("Ec2/List", controller.ListEc2)
@@ -48,6 +48,9 @@ func (p *Router) LoadUserRoute() {
 	user.POST("Ec2/Start", controller.StartEc2)
 	user.POST("Ec2/Reboot", controller.RebootEc2)
 	user.POST("Ec2/Delete", controller.DeleteEc2)
+	user.POST("Ec2/CreateSshKey", controller.CreateEc2SshKey)
+	user.POST("Ec2/ListSshKey", controller.ListEc2SshKey)
+	user.POST("Ec2/DeleteSshKey", controller.DeleteEc2SshKey)
 	//Lightsail
 	user.POST("LightSail/GetRegions", controller.GetRegions)
 	user.POST("LightSail/Create", controller.CreateLightsail)
@@ -66,8 +69,8 @@ func (p *Router) LoadUserRoute() {
 	user.POST("Quota/ChangeQuota")
 }
 
-func (p *Router) LoadAdminRoute() {
-	admin := p.router.Group("/api/v1/")
+func LoadAdminRoute() {
+	admin := engine.Group("/api/v1/")
 	admin.Use(middleware.UserCheck, middleware.AdminCheck)
 	//Admin Only
 	admin.GET("User/List", controller.GetUserList)

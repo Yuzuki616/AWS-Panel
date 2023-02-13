@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-func (p *Aws) getVpcId() (string, error) {
-	svc := ec2.New(p.Sess)
+func (a *Aws) getVpcId() (string, error) {
+	svc := ec2.New(a.Sess)
 	vpc, err := svc.DescribeVpcs(&ec2.DescribeVpcsInput{})
 	if err != nil {
 		return "", err
@@ -15,9 +15,9 @@ func (p *Aws) getVpcId() (string, error) {
 	return *vpc.Vpcs[0].VpcId, nil
 }
 
-func (p *Aws) CreateWl(Zone string) (string, error) {
-	svc := ec2.New(p.Sess)
-	vpcId, vpcErr := p.getVpcId()
+func (a *Aws) CreateWl(Zone string) (string, error) {
+	svc := ec2.New(a.Sess)
+	vpcId, vpcErr := a.getVpcId()
 	if vpcErr != nil {
 		return "", vpcErr
 	}
@@ -84,8 +84,8 @@ func (p *Aws) CreateWl(Zone string) (string, error) {
 	return *sub.Subnet.SubnetId, nil
 }
 
-func (p Aws) GetSubnetInfo() (*ec2.DescribeSubnetsOutput, error) {
-	svc := ec2.New(p.Sess)
+func (a *Aws) GetSubnetInfo() (*ec2.DescribeSubnetsOutput, error) {
+	svc := ec2.New(a.Sess)
 	sub, err := svc.DescribeSubnets(&ec2.DescribeSubnetsInput{
 		Filters: []*ec2.Filter{
 			{
@@ -100,8 +100,8 @@ func (p Aws) GetSubnetInfo() (*ec2.DescribeSubnetsOutput, error) {
 	return sub, nil
 }
 
-func (p *Aws) CreateEc2Wl(SubId string, Ami string, Name string, DiskSize int64) (*Ec2Info, error) {
-	svc := ec2.New(p.Sess)
+func (a *Aws) CreateEc2Wl(SubId string, Ami string, Name string, DiskSize int64) (*Ec2Info, error) {
+	svc := ec2.New(a.Sess)
 	dateName := Name + time.Unix(time.Now().Unix(), 0).Format("_2006-01-02_15:04:05")
 	keyRt, keyErr := svc.CreateKeyPair(&ec2.CreateKeyPairInput{KeyName: &dateName})
 	if keyErr != nil {

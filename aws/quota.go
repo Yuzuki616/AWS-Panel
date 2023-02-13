@@ -5,8 +5,8 @@ import (
 	quota "github.com/aws/aws-sdk-go/service/servicequotas"
 )
 
-func (p *Aws) GetQuota(ServiceCode string, QuotaCode string) (*quota.ServiceQuota, error) {
-	svc := quota.New(p.Sess)
+func (a *Aws) GetQuota(ServiceCode string, QuotaCode string) (*quota.ServiceQuota, error) {
+	svc := quota.New(a.Sess)
 	rt, err := svc.GetServiceQuota(&quota.GetServiceQuotaInput{
 		ServiceCode: aws.String(ServiceCode),
 		QuotaCode:   aws.String(QuotaCode),
@@ -16,8 +16,8 @@ func (p *Aws) GetQuota(ServiceCode string, QuotaCode string) (*quota.ServiceQuot
 	}
 	return rt.Quota, nil
 }
-func (p *Aws) ChangeQuota(ServiceCode string, QuotaCode string, DesiredValue float64) error {
-	svc := quota.New(p.Sess)
+func (a *Aws) ChangeQuota(ServiceCode string, QuotaCode string, DesiredValue float64) error {
+	svc := quota.New(a.Sess)
 	_, err := svc.RequestServiceQuotaIncrease(&quota.RequestServiceQuotaIncreaseInput{
 		ServiceCode:  aws.String(ServiceCode),
 		QuotaCode:    aws.String(QuotaCode),
@@ -29,8 +29,8 @@ func (p *Aws) ChangeQuota(ServiceCode string, QuotaCode string, DesiredValue flo
 	return nil
 }
 
-func (p *Aws) ListChangeQuotaRequest(ServiceCode string, QuotaCode string) ([]*quota.RequestedServiceQuotaChange, error) {
-	svc := quota.New(p.Sess)
+func (a *Aws) ListChangeQuotaRequest(ServiceCode string, QuotaCode string) ([]*quota.RequestedServiceQuotaChange, error) {
+	svc := quota.New(a.Sess)
 	rt, err := svc.ListRequestedServiceQuotaChangeHistoryByQuota(&quota.ListRequestedServiceQuotaChangeHistoryByQuotaInput{
 		ServiceCode: aws.String(ServiceCode),
 		QuotaCode:   aws.String(QuotaCode),

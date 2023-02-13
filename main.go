@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/Yuzuki616/Aws-Panel/conf"
 	"github.com/Yuzuki616/Aws-Panel/data"
+	"github.com/Yuzuki616/Aws-Panel/mail"
 	"github.com/Yuzuki616/Aws-Panel/router"
 	"github.com/Yuzuki616/Aws-Panel/utils"
 	log "github.com/sirupsen/logrus"
@@ -43,14 +44,14 @@ func main() {
 		log.Warning("将等待10秒后启动")
 		time.Sleep(time.Second * 10)
 	}
-	dbErr := data.DbInit("./data.db")
-	if dbErr != nil {
-		log.Error("Database init error: ", dbErr)
+	err = data.Init(conf.Config.DbPath)
+	if err != nil {
+		log.Error("Database init error: ", err)
 	}
-	route := router.New()
-	route.LoadRoute()
-	startErr := route.Start()
-	if startErr != nil {
-		log.Error(startErr)
+	mail.Init()
+	router.Init()
+	err = router.Start()
+	if err != nil {
+		log.Error(err)
 	}
 }

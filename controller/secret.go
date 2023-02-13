@@ -2,98 +2,97 @@ package controller
 
 import (
 	"github.com/Yuzuki616/Aws-Panel/data"
+	"github.com/Yuzuki616/Aws-Panel/request"
 	"github.com/gin-gonic/gin"
 )
 
 func AddSecret(c *gin.Context) {
 	username := c.GetString("username")
-	params := GetAndCheckParams(c, "name", "id", "secret")
-	if params == nil {
+	params := &request.AddSecret{}
+	if err := c.ShouldBind(params); err != nil {
+		c.JSON(200, gin.H{
+			"code": 400,
+			"msg":  err.Error(),
+		})
 		return
 	}
-
-	addErr := data.AddSecret(username, params["name"], params["id"], params["secret"])
-	if addErr == nil {
-		c.JSON(200, gin.H{
-			"code": 200,
-			"msg":  "添加成功",
-		})
-	} else {
+	addErr := data.AddSecret(username, params.Name, params.Id, params.Secret)
+	if addErr != nil {
 		c.JSON(200, gin.H{
 			"code": 400,
 			"msg":  addErr.Error(),
 		})
 		return
 	}
+	c.JSON(200, gin.H{
+		"code": 200,
+		"msg":  "添加成功",
+	})
 }
 
 func ListSecret(c *gin.Context) {
 	username := c.GetString("username")
-
 	secret, listErr := data.ListSecret(username)
-	if listErr == nil {
-		var tmp []map[string]string
-		for _, v := range secret {
-			tmp = append(tmp, map[string]string{
-				"name":   v.Name,
-				"id":     v.SecretId,
-				"secret": v.Secret,
-			})
-		}
-		c.JSON(200, gin.H{
-			"code": 200,
-			"msg":  "查询成功",
-			"data": tmp,
+	if listErr != nil {
+		c.JSON(400, gin.H{
+			"code": 400,
+			"msg":  listErr.Error(),
+		})
+		return
+	}
+	var tmp []map[string]string
+	for _, v := range secret {
+		tmp = append(tmp, map[string]string{
+			"name":   v.Name,
+			"id":     v.SecretId,
+			"secret": v.Secret,
 		})
 	}
+	c.JSON(200, gin.H{
+		"code": 200,
+		"msg":  "查询成功",
+		"data": tmp,
+	})
 }
 
-func GetSecretInfo(c *gin.Context) {
+func GetSecret(c *gin.Context) {
 	username := c.GetString("username")
-
-	name := c.PostForm("name")
-	if name == "" {
-		c.JSON(200, gin.H{
-			"code": 400,
-			"msg":  "信息填写不完整",
-		})
-	}
-	secret, getErr := data.GetSecret(username, name)
-	if getErr == nil {
-		c.JSON(200, gin.H{
-			"code": 200,
-			"msg":  "查询成功",
-			"data": secret,
-		})
-	} else {
+	params := &request.GetSecret{}
+	secret, getErr := data.GetSecret(username, params.Name)
+	if getErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
 			"msg":  getErr.Error(),
 		})
+		return
 	}
+	c.JSON(200, gin.H{
+		"code": 200,
+		"msg":  "查询成功",
+		"data": secret,
+	})
 }
 
 func DelSecret(c *gin.Context) {
 	username := c.GetString("username")
-
-	name := c.PostForm("name")
-	if name == "" {
+	params := &request.DelSecret{}
+	if err := c.ShouldBind(params); err != nil {
 		c.JSON(200, gin.H{
 			"code": 400,
-			"msg":  "信息填写不完整",
+			"msg":  err.Error(),
 		})
+		return
 	}
-	delErr := data.DelSecret(username, name)
-	if delErr == nil {
-		c.JSON(200, gin.H{
-			"code": 200,
-			"msg":  "删除成功",
-		})
-	} else {
+	delErr := data.DelSecret(username, params.Name)
+	if delErr != nil {
 		c.JSON(200, gin.H{
 			"code": 400,
 			"msg":  delErr.Error(),
 		})
 		return
 	}
+	c.JSON(200, gin.H{
+		"code": 200,
+		"msg":  "删除成功",
+	})
 }

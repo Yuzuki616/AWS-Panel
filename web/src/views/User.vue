@@ -222,10 +222,10 @@
 </template>
 
 <script>
-import axios from '../api'
+import axios from '../utils/api'
 
 export default {
-  name: 'user',
+  name: 'userPage',
   metaInfo: {
     title: '用户中心 - AWS Panel',
   },

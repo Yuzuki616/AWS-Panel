@@ -10,14 +10,17 @@ const tmpl = "<div style=\"background: #eee\">\n    <table width=\"600\" border=
 
 var mail *gomail.Dialer
 
-func init() {
+func Init() {
+	if !conf.Config.EnableMailVerify {
+		return
+	}
 	c := conf.Config.MailConfig
 	mail = gomail.NewDialer(c.Host, c.Port, c.Email, c.Password)
 }
 
-func SendMail(form, to, code string) error {
+func SendMail(to, code string) error {
 	m := gomail.NewMessage()
-	m.SetHeader("From", form)
+	m.SetHeader("From", conf.Config.MailConfig.Email)
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", "邮件验证码")
 	m.SetBody("text/html", strings.ReplaceAll(tmpl,

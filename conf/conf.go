@@ -11,6 +11,7 @@ var Config *Conf
 type Conf struct {
 	path             string
 	LogLevel         string `json:"LogLevel"`
+	Addr             string `json:"Addr"`
 	DbPath           string `json:"DbPath"`
 	EnableLoadStatic bool   `json:"LoadStatic"`
 	StaticPath       string `json:"StaticPath"`
@@ -28,6 +29,7 @@ func New(path string) *Conf {
 	return &Conf{
 		path:             path,
 		LogLevel:         "error",
+		Addr:             ":8011",
 		DbPath:           "./data.db",
 		EnableLoadStatic: true,
 		StaticPath:       "./web",

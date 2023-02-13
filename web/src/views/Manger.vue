@@ -176,10 +176,10 @@
 
 
 <script>
-import api from '../api'
+import api from '../utils/api'
 
 export default {
-  name: 'user',
+  name: 'mangerPage',
   metaInfo: {
     title: '管理中心 - AWS Panel',
   },
