@@ -1,0 +1,14 @@
+{
+  "LogLevel": "error",
+  "Addr": ":8011",
+  "DbPath": "./data.db",
+  "LoadStatic": true,
+  "StaticPath": "./web",
+  "EnableMailVerify": false,
+  "MailConfig": {
+    "Host": "smtp.qq.com",
+    "Port": 465,
+    "Email": "a@qq.com",
+    "Password": "12321"
+  }
+}
