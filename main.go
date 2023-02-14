@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"github.com/Yuzuki616/Aws-Panel/conf"
 	"github.com/Yuzuki616/Aws-Panel/data"
 	"github.com/Yuzuki616/Aws-Panel/mail"
@@ -11,11 +12,21 @@ import (
 	"time"
 )
 
-const version = "0.3.6"
+var config = flag.String("config", ".config.json", "config file path")
+var ver = flag.Bool("version", false, "print version message")
+
+var (
+	// use ld flags replace
+	version   = "master"
+	commit    = "none"
+	buildDate = "none"
+)
 
 func printVersion() {
 	log.Info("Aws Panel")
 	log.Info("Version: ", version)
+	log.Info("Commit: ", commit)
+	log.Info("Build Date: ", buildDate)
 	log.Info("Github: https://github.com/Yuzuki616/AWS-Panel")
 }
 
@@ -25,6 +36,9 @@ func main() {
 		LogFormat:       "Aws-Panel | %time% | %lvl% >> %msg% \n",
 	})
 	printVersion()
+	if *ver {
+		return
+	}
 	err := conf.Init("./config.json")
 	if err != nil {
 		log.Error("Init config error: ", err)
