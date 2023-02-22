@@ -7,134 +7,89 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetRegions(c *gin.Context) {
+func GetRegions(c *gin.Context) error {
 	email := c.GetString("email")
 	params := request.GetRegions{}
 	if err := c.ShouldBind(&params); err != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  err.Error(),
-		})
-		return
+		return err
 	}
 	secret, _ := data.GetSecret(email, params.SecretName)
 	client, newErr := aws.New("ap-northeast-1", secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  newErr.Error(),
-		})
-		return
+		return newErr
 	}
-	regions, GetRegionsErr := client.GetRegions()
-	if GetRegionsErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  GetRegionsErr.Error(),
-		})
-		return
+	regions, getRegionsErr := client.GetRegions()
+	if getRegionsErr != nil {
+		return getRegionsErr
 	}
 	c.JSON(200, gin.H{
 		"code": 200,
 		"msg":  "查询成功",
 		"data": regions,
 	})
+	return nil
 }
 
-func CreateLightsail(c *gin.Context) {
+func CreateLightsail(c *gin.Context) error {
 	email := c.GetString("email")
 	params := request.CreateLightsail{}
 	if err := c.ShouldBind(&params); err != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  err.Error(),
-		})
-		return
+		return err
 	}
 	secret, _ := data.GetSecret(email, params.SecretName)
 	client, newErr := aws.New(params.Zone, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  newErr.Error(),
-		})
-		return
+		return newErr
 	}
 	createRt, createErr := client.CreateLs(params.Name,
 		params.AvailabilityZone, params.BlueprintId, params.BundleId)
 	if createErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  createErr.Error(),
-		})
-		return
+		return createErr
 	}
 	c.JSON(200, gin.H{
 		"code": 200,
 		"msg":  "创建成功",
 		"data": createRt.Key,
 	})
+	return nil
 }
 
-func OpenLightsailPorts(c *gin.Context) {
+func OpenLightsailPorts(c *gin.Context) error {
 	email := c.GetString("email")
 	p := request.OpenLightsailPorts{}
 	if err := c.ShouldBind(&p); err != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  err.Error(),
-		})
-		return
+		return err
 	}
 	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Zone, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  newErr.Error(),
-		})
-		return
+		return newErr
 	}
 	openErr := client.OpenLsPorts(p.Name)
 	if openErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  openErr.Error(),
-		})
-		return
+		return openErr
 	}
 	c.JSON(200, gin.H{
 		"code": 200,
 		"msg":  "开放成功",
 	})
+	return nil
 }
 
-func ListLightsail(c *gin.Context) {
+func ListLightsail(c *gin.Context) error {
 	email := c.GetString("email")
 	p := request.LightsailAction{}
 	if err := c.ShouldBind(&p); err != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  err.Error(),
-		})
-		return
+		return err
 	}
 	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Zone, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  newErr.Error(),
-		})
-		return
+		return newErr
 	}
 	listRt, listErr := client.ListLs()
 	if listErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  listErr.Error(),
-		})
-		return
+		return listErr
 	}
 	var instances []*aws.LsInfo
 	if listRt == nil {
@@ -145,197 +100,136 @@ func ListLightsail(c *gin.Context) {
 		"msg":  "查询成功",
 		"data": instances,
 	})
+	return nil
 }
 
-func GetLightsailInfo(c *gin.Context) {
+func GetLightsailInfo(c *gin.Context) error {
 	email := c.GetString("email")
 	p := request.LightsailAction{}
 	name := c.PostForm("name")
 	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Zone, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  newErr.Error(),
-		})
-		return
+		return newErr
 	}
-	info, GetInfoErr := client.GetLsInfo(name)
-	if GetInfoErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  GetInfoErr.Error(),
-		})
-		return
+	info, getInfoErr := client.GetLsInfo(name)
+	if getInfoErr != nil {
+		return getInfoErr
 	}
 	c.JSON(200, gin.H{
 		"code": 200,
 		"msg":  "删除成功",
 		"data": info,
 	})
+	return nil
 }
 
-func StartLightsail(c *gin.Context) {
+func StartLightsail(c *gin.Context) error {
 	email := c.GetString("email")
 	p := request.LightsailAction{}
 	if err := c.ShouldBind(&p); err != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  err.Error(),
-		})
-		return
+		return err
 	}
 	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Zone, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  newErr.Error(),
-		})
-		return
+		return newErr
 	}
 	startErr := client.StartLs(p.Name)
 	if startErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  startErr.Error(),
-		})
-		return
+		return startErr
 	}
 	c.JSON(200, gin.H{
 		"code": 200,
 		"msg":  "启动成功",
 	})
+	return nil
 }
 
-func StopLightsail(c *gin.Context) {
+func StopLightsail(c *gin.Context) error {
 	email := c.GetString("email")
 	p := request.LightsailAction{}
 	if err := c.ShouldBind(&p); err != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  err.Error(),
-		})
-		return
+		return err
 	}
 	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Zone, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  newErr.Error(),
-		})
-		return
+		return newErr
 	}
 	stopErr := client.StopLs(p.Name)
 	if stopErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  stopErr.Error(),
-		})
-		return
+		return stopErr
 	}
 	c.JSON(200, gin.H{
 		"code": 200,
 		"msg":  "停止成功",
 	})
+	return nil
 }
 
-func RebootLightsail(c *gin.Context) {
+func RebootLightsail(c *gin.Context) error {
 	email := c.GetString("email")
 	p := request.LightsailAction{}
 	if err := c.ShouldBind(&p); err != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  err.Error(),
-		})
-		return
+		return err
 	}
 	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Zone, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  newErr.Error(),
-		})
-		return
+		return newErr
 	}
 	stopErr := client.RebootLs(p.Name)
 	if stopErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  stopErr.Error(),
-		})
-		return
+		return stopErr
 	}
 	c.JSON(200, gin.H{
 		"code": 200,
 		"msg":  "停止成功",
 	})
+	return nil
 }
 
-func ChangeLightsailIp(c *gin.Context) {
+func ChangeLightsailIp(c *gin.Context) error {
 	email := c.GetString("email")
 	p := request.LightsailAction{}
 	if err := c.ShouldBind(&p); err != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  err.Error(),
-		})
-		return
+		return err
 	}
 	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Zone, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  newErr.Error(),
-		})
-		return
+		return newErr
 	}
 	changeIpErr := client.ChangeLsIp(p.Name)
 	if changeIpErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  changeIpErr.Error(),
-		})
-		return
+		return changeIpErr
 	}
 	c.JSON(200, gin.H{
 		"code": 200,
 		"msg":  "更换IP成功",
 	})
+	return nil
 }
 
-func DeleteLightsail(c *gin.Context) {
+func DeleteLightsail(c *gin.Context) error {
 	email := c.GetString("email")
 	p := request.DeleteLightsail{}
 	if err := c.ShouldBind(&p); err != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  err.Error(),
-		})
-		return
+		return err
 	}
 	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Zone, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  newErr.Error(),
-		})
-		return
+		return newErr
 	}
 	startErr := client.DeleteLs(p.Name, p.ResourceName)
 	if startErr != nil {
-		c.JSON(400, gin.H{
-			"code": 400,
-			"msg":  startErr.Error(),
-		})
-		return
+		return startErr
 	}
 	c.JSON(200, gin.H{
 		"code": 200,
 		"msg":  "删除成功",
 	})
+	return nil
 }
