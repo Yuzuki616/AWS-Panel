@@ -216,7 +216,7 @@ export default {
           let tmp = []
           for (const v of rsp.data.data) {
             tmp.push({
-              UserName: v.UserName,
+              Email: v.Email,
               Status: v.Status ? '封禁' : '正常',
               IsAdmin: v.IsAdmin ? '是' : '否',
             })
@@ -231,7 +231,7 @@ export default {
     },
     deleteUser(item) {
       let data = new FormData()
-      data.append("username", item.UserName)
+      data.append("email", item.Email)
       api.post("/api/v1/User/Delete",data).then(rsp => {
         this.messageText = rsp.data.msg
         this.message = true
@@ -241,7 +241,7 @@ export default {
     },
     banUser(item) {
       let data = new FormData()
-      data.append("username", item.UserName)
+      data.append("email", item.Email)
       api.post("/api/v1/User/Ban",data).then(rsp => {
         this.messageText = rsp.data.msg
         this.message = true
@@ -251,7 +251,7 @@ export default {
     },
     unBanUser(item){
       let data = new FormData()
-      data.append("username", item.UserName)
+      data.append("email", item.Email)
       api.post("/api/v1/User/UnBan",data).then(rsp => {
         this.messageText = rsp.data.msg
         this.message = true

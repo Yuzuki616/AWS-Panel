@@ -172,7 +172,7 @@ export default {
       }
       this.loading = true
       let data = new FormData();
-      data.append("username", this.email)
+      data.append("email", this.email)
       data.append("password", this.password)
       data.append("code", this.emailCode)
       axios.post("/api/v1/User/Register",

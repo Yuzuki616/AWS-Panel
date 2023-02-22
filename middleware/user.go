@@ -16,15 +16,16 @@ func UserCheck(c *gin.Context) {
 			"msg":  "用户未登录",
 		})
 		c.Abort()
+		return
 	}
-	username, ok := cache.Get(id.(string))
+	email, ok := cache.Get(id.(string))
 	if !ok {
 		c.JSON(401, gin.H{
 			"code": 401,
 			"msg":  "用户未登录",
 		})
 		c.Abort()
+		return
 	}
-	c.Set("username", username)
-	return
+	c.Set("email", email)
 }

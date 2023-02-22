@@ -29,7 +29,7 @@ func LoadNormalRoute() {
 func LoadUserRoute() {
 	user := engine.Group("/api/v1/")
 	user.Use(middleware.UserCheck)
-	user.POST("User/ChangeUsername", controller.ChangeUsername)
+	user.POST("User/ChangeEmail", controller.ChangeEmail)
 	user.POST("User/ChangePassword", controller.ChangePassword)
 	user.GET("User/Info", controller.GetUserInfo)
 	user.GET("User/Logout", controller.Logout)

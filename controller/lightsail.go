@@ -8,7 +8,7 @@ import (
 )
 
 func GetRegions(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	params := request.GetRegions{}
 	if err := c.ShouldBind(&params); err != nil {
 		c.JSON(400, gin.H{
@@ -17,7 +17,7 @@ func GetRegions(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, params.SecretName)
+	secret, _ := data.GetSecret(email, params.SecretName)
 	client, newErr := aws.New("ap-northeast-1", secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
@@ -42,7 +42,7 @@ func GetRegions(c *gin.Context) {
 }
 
 func CreateLightsail(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	params := request.CreateLightsail{}
 	if err := c.ShouldBind(&params); err != nil {
 		c.JSON(400, gin.H{
@@ -51,7 +51,7 @@ func CreateLightsail(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, params.SecretName)
+	secret, _ := data.GetSecret(email, params.SecretName)
 	client, newErr := aws.New(params.Zone, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
@@ -77,7 +77,7 @@ func CreateLightsail(c *gin.Context) {
 }
 
 func OpenLightsailPorts(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	p := request.OpenLightsailPorts{}
 	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(400, gin.H{
@@ -86,7 +86,7 @@ func OpenLightsailPorts(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, p.SecretName)
+	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Zone, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
@@ -110,7 +110,7 @@ func OpenLightsailPorts(c *gin.Context) {
 }
 
 func ListLightsail(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	p := request.LightsailAction{}
 	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(400, gin.H{
@@ -119,7 +119,7 @@ func ListLightsail(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, p.SecretName)
+	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Zone, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
@@ -148,10 +148,10 @@ func ListLightsail(c *gin.Context) {
 }
 
 func GetLightsailInfo(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	p := request.LightsailAction{}
 	name := c.PostForm("name")
-	secret, _ := data.GetSecret(username, p.SecretName)
+	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Zone, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
@@ -176,7 +176,7 @@ func GetLightsailInfo(c *gin.Context) {
 }
 
 func StartLightsail(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	p := request.LightsailAction{}
 	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(400, gin.H{
@@ -185,7 +185,7 @@ func StartLightsail(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, p.SecretName)
+	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Zone, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
@@ -209,7 +209,7 @@ func StartLightsail(c *gin.Context) {
 }
 
 func StopLightsail(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	p := request.LightsailAction{}
 	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(400, gin.H{
@@ -218,7 +218,7 @@ func StopLightsail(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, p.SecretName)
+	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Zone, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
@@ -242,7 +242,7 @@ func StopLightsail(c *gin.Context) {
 }
 
 func RebootLightsail(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	p := request.LightsailAction{}
 	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(400, gin.H{
@@ -251,7 +251,7 @@ func RebootLightsail(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, p.SecretName)
+	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Zone, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
@@ -275,7 +275,7 @@ func RebootLightsail(c *gin.Context) {
 }
 
 func ChangeLightsailIp(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	p := request.LightsailAction{}
 	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(400, gin.H{
@@ -284,7 +284,7 @@ func ChangeLightsailIp(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, p.SecretName)
+	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Zone, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
@@ -308,7 +308,7 @@ func ChangeLightsailIp(c *gin.Context) {
 }
 
 func DeleteLightsail(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	p := request.DeleteLightsail{}
 	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(400, gin.H{
@@ -317,7 +317,7 @@ func DeleteLightsail(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, p.SecretName)
+	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Zone, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{

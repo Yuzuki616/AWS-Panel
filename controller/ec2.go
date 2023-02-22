@@ -8,7 +8,7 @@ import (
 )
 
 func CreateEc2(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	p := request.CreateEc2{}
 	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(400, gin.H{
@@ -17,7 +17,7 @@ func CreateEc2(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, p.SecretName)
+	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Region, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
@@ -57,7 +57,7 @@ func CreateEc2(c *gin.Context) {
 }
 
 func ListEc2(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	p := request.ListEc2{}
 	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(400, gin.H{
@@ -66,7 +66,7 @@ func ListEc2(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, p.SecretName)
+	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Region, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
@@ -91,7 +91,7 @@ func ListEc2(c *gin.Context) {
 }
 
 func GetEc2Info(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	p := request.Ec2Action{}
 	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(400, gin.H{
@@ -100,7 +100,7 @@ func GetEc2Info(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, p.SecretName)
+	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Region, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
@@ -124,7 +124,7 @@ func GetEc2Info(c *gin.Context) {
 }
 
 func ChangeEc2Ip(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	p := request.Ec2Action{}
 	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(400, gin.H{
@@ -133,7 +133,7 @@ func ChangeEc2Ip(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, p.SecretName)
+	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Region, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
@@ -158,7 +158,7 @@ func ChangeEc2Ip(c *gin.Context) {
 }
 
 func StopEc2(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	p := request.Ec2Action{}
 	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(400, gin.H{
@@ -167,7 +167,7 @@ func StopEc2(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, p.SecretName)
+	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Region, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
@@ -191,7 +191,7 @@ func StopEc2(c *gin.Context) {
 }
 
 func StartEc2(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	p := request.Ec2Action{}
 	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(400, gin.H{
@@ -200,7 +200,7 @@ func StartEc2(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, p.SecretName)
+	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Region, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
@@ -224,7 +224,7 @@ func StartEc2(c *gin.Context) {
 }
 
 func RebootEc2(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	p := request.Ec2Action{}
 	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(400, gin.H{
@@ -233,7 +233,7 @@ func RebootEc2(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, p.SecretName)
+	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Region, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
@@ -257,7 +257,7 @@ func RebootEc2(c *gin.Context) {
 }
 
 func DeleteEc2(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	p := request.Ec2Action{}
 	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(400, gin.H{
@@ -266,7 +266,7 @@ func DeleteEc2(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, p.SecretName)
+	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Region, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
@@ -290,7 +290,7 @@ func DeleteEc2(c *gin.Context) {
 }
 
 func CreateEc2SshKey(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	p := request.CreateEc2SshKey{}
 	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(400, gin.H{
@@ -299,7 +299,7 @@ func CreateEc2SshKey(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, p.SecretName)
+	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Region, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
@@ -324,7 +324,7 @@ func CreateEc2SshKey(c *gin.Context) {
 }
 
 func ListEc2SshKey(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	p := request.ListEc2SshKey{}
 	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(400, gin.H{
@@ -333,7 +333,7 @@ func ListEc2SshKey(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, p.SecretName)
+	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Region, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{
@@ -358,7 +358,7 @@ func ListEc2SshKey(c *gin.Context) {
 }
 
 func DeleteEc2SshKey(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	p := request.DeleteEc2SshKey{}
 	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(400, gin.H{
@@ -367,7 +367,7 @@ func DeleteEc2SshKey(c *gin.Context) {
 		})
 		return
 	}
-	secret, _ := data.GetSecret(username, p.SecretName)
+	secret, _ := data.GetSecret(email, p.SecretName)
 	client, newErr := aws.New(p.Region, secret.SecretId, secret.Secret, "")
 	if newErr != nil {
 		c.JSON(400, gin.H{

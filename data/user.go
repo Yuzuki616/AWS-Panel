@@ -9,16 +9,15 @@ import (
 
 type UserData struct {
 	gorm.Model
-	Status   int    `gorm:"Status"` //0 正常,1 封禁
-	Username string `gorm:"Username"`
-	Email    string `gorm:"Email"`
-	Password string `gorm:"Password"`
-	IsAdmin  int    `gorm:"IsAdmin"` //0 否,1 是
+	Status   int    `gorm:"column:Status"` //0 正常,1 封禁
+	Email    string `gorm:"column:Email"`
+	Password string `gorm:"column:Password"`
+	IsAdmin  int    `gorm:"column:IsAdmin"` //0 否,1 是
 }
 
-func VerifyUser(Username string, Password string) error {
+func VerifyUser(email string, Password string) error {
 	var user UserData
-	client.Where("Username = ?", Username).First(&user)
+	client.Where("Email = ?", email).First(&user)
 	if user.ID == 0 || !utils.VerifyPasswordHash(Password, user.Password) {
 		return errors.New("用户名或密码错误")
 	}
@@ -28,13 +27,13 @@ func VerifyUser(Username string, Password string) error {
 	return nil
 }
 
-func CreateUser(Username, Email, Password string, IsAdmin int) error {
+func CreateUser(email, Email, Password string, IsAdmin int) error {
 	var user UserData
-	client.Where("Username = ?", Username).First(&user)
+	client.Where("Email = ?", email).First(&user)
 	if user.ID != 0 {
 		return errors.New("用户已存在")
 	}
-	user.Username = Username
+	user.Email = email
 	user.Email = Email
 	Password, err := utils.GenPasswordHash(Password)
 	if err != nil {
@@ -47,34 +46,35 @@ func CreateUser(Username, Email, Password string, IsAdmin int) error {
 	return nil
 }
 
-func ChangeUsername(OldUsername, NewUsername, Password string) error {
+func ChangeEmail(oldEmail, newEmail, Password string) error {
 	var user UserData
-	client.Where("Username = ?", OldUsername).First(&user)
+	client.Where("Email = ?", oldEmail).First(&user)
 	if user.ID == 0 || !utils.VerifyPasswordHash(Password, user.Password) {
 		return errors.New("用户名或密码错误")
 	}
-	user.Username = NewUsername
+	user.Email = newEmail
 	client.Save(&user)
 	return nil
 }
 
-func ChangeUserPassword(username string, OldPasswordMd5, NewPasswordMd5 string) error {
+func ChangeUserPassword(email string, oldPassword, newPassword string) error {
 	var user UserData
-	client.Where("Username = ?", username).First(&user)
+	client.Where("Email = ?", email).First(&user)
 	if user.ID == 0 {
 		return errors.New("用户不存在或密码错误")
 	}
-	if !utils.VerifyPasswordHash(OldPasswordMd5, user.Password) {
+	if !utils.VerifyPasswordHash(oldPassword, user.Password) {
 		return errors.New("用户不存在或密码错误")
 	}
-	user.Password = NewPasswordMd5
+	hash, _ := utils.GenPasswordHash(newPassword)
+	user.Password = hash
 	client.Save(&user)
 	return nil
 }
 
-func IsAdmin(Username string) bool {
+func IsAdmin(email string) bool {
 	var user UserData
-	client.Where("Username = ?", Username).First(&user)
+	client.Where("Email = ?", email).First(&user)
 	if user.ID == 0 {
 		return false
 	}
@@ -84,9 +84,9 @@ func IsAdmin(Username string) bool {
 	return false
 }
 
-func DeleteUser(Username string) error {
+func DeleteUser(email string) error {
 	var user UserData
-	client.Where("Username = ?", Username).First(&user)
+	client.Where("Email = ?", email).First(&user)
 	if user.ID == 0 {
 		return errors.New("用户不存在")
 	}
@@ -97,9 +97,9 @@ func DeleteUser(Username string) error {
 	return nil
 }
 
-func BanUser(Username string) error {
+func BanUser(email string) error {
 	var user UserData
-	client.Where("Username = ?", Username).First(&user)
+	client.Where("Email = ?", email).First(&user)
 	if user.ID == 0 {
 		return errors.New("用户不存在")
 	}
@@ -115,9 +115,9 @@ func BanUser(Username string) error {
 	return nil
 }
 
-func UnBanUser(Username string) error {
+func UnBanUser(email string) error {
 	var user UserData
-	client.Where("Username = ?", Username).First(&user)
+	client.Where("Email = ?", email).First(&user)
 	if user.ID == 0 {
 		return errors.New("用户不存在")
 	}
@@ -134,9 +134,9 @@ func UnBanUser(Username string) error {
 }
 
 type UserInfo struct {
-	UserName string
-	Status   int
-	IsAdmin  int
+	Email   string
+	Status  int
+	IsAdmin int
 }
 
 func GetUserList() ([]UserInfo, error) {
@@ -148,9 +148,9 @@ func GetUserList() ([]UserInfo, error) {
 	var users []UserInfo
 	for i := range u {
 		users = append(users, UserInfo{
-			UserName: u[i].Username,
-			Status:   u[i].Status,
-			IsAdmin:  u[i].IsAdmin,
+			Email:   u[i].Email,
+			Status:  u[i].Status,
+			IsAdmin: u[i].IsAdmin,
 		})
 	}
 	return users, nil

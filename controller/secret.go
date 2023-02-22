@@ -7,7 +7,7 @@ import (
 )
 
 func AddSecret(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	params := &request.AddSecret{}
 	if err := c.ShouldBind(params); err != nil {
 		c.JSON(200, gin.H{
@@ -16,7 +16,7 @@ func AddSecret(c *gin.Context) {
 		})
 		return
 	}
-	addErr := data.AddSecret(username, params.Name, params.Id, params.Secret)
+	addErr := data.AddSecret(email, params.Name, params.Id, params.Secret)
 	if addErr != nil {
 		c.JSON(200, gin.H{
 			"code": 400,
@@ -31,8 +31,8 @@ func AddSecret(c *gin.Context) {
 }
 
 func ListSecret(c *gin.Context) {
-	username := c.GetString("username")
-	secret, listErr := data.ListSecret(username)
+	email := c.GetString("email")
+	secret, listErr := data.ListSecret(email)
 	if listErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -56,9 +56,9 @@ func ListSecret(c *gin.Context) {
 }
 
 func GetSecret(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	params := &request.GetSecret{}
-	secret, getErr := data.GetSecret(username, params.Name)
+	secret, getErr := data.GetSecret(email, params.Name)
 	if getErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -74,7 +74,7 @@ func GetSecret(c *gin.Context) {
 }
 
 func DelSecret(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	params := &request.DelSecret{}
 	if err := c.ShouldBind(params); err != nil {
 		c.JSON(200, gin.H{
@@ -83,7 +83,7 @@ func DelSecret(c *gin.Context) {
 		})
 		return
 	}
-	delErr := data.DelSecret(username, params.Name)
+	delErr := data.DelSecret(email, params.Name)
 	if delErr != nil {
 		c.JSON(200, gin.H{
 			"code": 400,

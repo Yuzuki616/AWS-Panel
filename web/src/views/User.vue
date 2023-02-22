@@ -12,7 +12,7 @@
               User Center
             </v-card-subtitle>
             <v-card-text>
-              欢迎回来，{{ username }}
+              欢迎回来，{{ email }}
             </v-card-text>
           </v-card>
         </v-col>
@@ -231,7 +231,7 @@ export default {
   },
   data() {
     return {
-      username: '未知用户',
+      email: '未知用户',
       oldPw: '',
       newPw: '',
       confirmNewPw: '',
@@ -261,7 +261,7 @@ export default {
   },
   mounted() {
     axios.get('/api/v1/User/Info', {withCredentials: true}).then(response => {
-      this.username = response.data.name
+      this.email = response.data.data
     })
     axios.get('/api/v1/Secret/List', {withCredentials: true}).then(response => {
       let tmp = []
@@ -302,7 +302,7 @@ export default {
         data.append('newPassword', this.newPw)
         axios.post('/api/v1/User/ChangePassword', data, {withCredentials: true}).then(response => {
           if (response.data.code === 200) {
-            this.$cookie.delete('usersession')
+            this.$cookie.delete('loginSession')
             this.messageText = '修改成功！'
             this.message = true
             setTimeout(() => {

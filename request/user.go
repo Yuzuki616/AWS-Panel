@@ -1,13 +1,12 @@
 package request
 
 type Login struct {
-	Username string `form:"username" binding:"required"`
+	Email    string `form:"username" binding:"required"`
 	Password string `form:"password" binding:"required"`
 }
 
 type Register struct {
-	Username string `form:"username" binding:"required"`
-	Email    string `form:"email"`
+	Email    string `form:"username" binding:"required"`
 	Password string `form:"password" binding:"required"`
 	Code     string `form:"code"`
 }
@@ -17,9 +16,9 @@ type SendMailVerify struct {
 }
 
 type ChangeUsername struct {
-	OldUsername string `form:"oldUsername" binding:"required"`
-	NewUsername string `form:"newUsername" binding:"required"`
-	Password    string `form:"password" binding:"required"`
+	OldEmail string `form:"oldEmail" binding:"required"`
+	NewEmail string `form:"newEmail" binding:"required"`
+	Password string `form:"password" binding:"required"`
 }
 
 type ChangePassword struct {
@@ -28,9 +27,9 @@ type ChangePassword struct {
 }
 
 type BanUser struct {
-	Username string `form:"username" binding:"required"`
+	Email string `form:"username" binding:"required"`
 }
 
 type DeleteUser struct {
-	Username string `form:"username" binding:"required"`
+	Email string `form:"username" binding:"required"`
 }

@@ -20,7 +20,7 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
-	err := data.VerifyUser(params.Username, params.Password)
+	err := data.VerifyUser(params.Email, params.Password)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -28,7 +28,7 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
-	err = addLoginSession(c, params.Username)
+	err = addLoginSession(c, params.Email)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -38,7 +38,7 @@ func Login(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{
 		"code":    200,
-		"isAdmin": data.IsAdmin(params.Username),
+		"isAdmin": data.IsAdmin(params.Email),
 		"msg":     "登录成功",
 	})
 }
@@ -102,7 +102,7 @@ func Register(c *gin.Context) {
 			return
 		}
 	}
-	registerErr := data.CreateUser(params.Username, params.Email, params.Password, 0)
+	registerErr := data.CreateUser(params.Email, params.Email, params.Password, 0)
 	if registerErr != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -116,7 +116,7 @@ func Register(c *gin.Context) {
 	})
 }
 
-func ChangeUsername(c *gin.Context) {
+func ChangeEmail(c *gin.Context) {
 	params := &request.ChangeUsername{}
 	if err := c.ShouldBind(params); err != nil {
 		c.JSON(400, gin.H{
@@ -125,7 +125,7 @@ func ChangeUsername(c *gin.Context) {
 		})
 		return
 	}
-	err := data.ChangeUsername(params.OldUsername, params.NewUsername, params.Password)
+	err := data.ChangeEmail(params.OldEmail, params.NewEmail, params.Password)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -144,7 +144,7 @@ func ChangeUsername(c *gin.Context) {
 }
 
 func ChangePassword(c *gin.Context) {
-	username := c.GetString("username")
+	username := c.GetString("email")
 	params := &request.ChangePassword{}
 	if err := c.ShouldBind(params); err != nil {
 		c.JSON(400, gin.H{
@@ -171,11 +171,11 @@ func ChangePassword(c *gin.Context) {
 }
 
 func GetUserInfo(c *gin.Context) {
-	username := c.GetString("username")
+	email := c.GetString("email")
 	c.JSON(200, gin.H{
 		"code": 200,
 		"msg":  "获取成功",
-		"name": username,
+		"data": email,
 	})
 }
 
@@ -196,8 +196,8 @@ func Logout(c *gin.Context) {
 }
 
 func IsAdmin(c *gin.Context) {
-	username := c.GetString("username")
-	if data.IsAdmin(username) {
+	email := c.GetString("email")
+	if data.IsAdmin(email) {
 		c.JSON(200, gin.H{
 			"code": 200,
 			"msg":  true,
@@ -219,7 +219,7 @@ func DeleteUser(c *gin.Context) {
 		})
 		return
 	}
-	err := data.DeleteUser(params.Username)
+	err := data.DeleteUser(params.Email)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -242,7 +242,7 @@ func BanUser(c *gin.Context) {
 		})
 		return
 	}
-	err := data.BanUser(params.Username)
+	err := data.BanUser(params.Email)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"code": 400,
@@ -265,7 +265,7 @@ func UnBanUser(c *gin.Context) {
 		})
 		return
 	}
-	err := data.UnBanUser(params.Username)
+	err := data.UnBanUser(params.Email)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"code": 400,

@@ -6,7 +6,7 @@ import (
 )
 
 func AdminCheck(c *gin.Context) {
-	username := c.GetString("username")
+	username := c.GetString("email")
 	if !data.IsAdmin(username) {
 		c.JSON(403, gin.H{
 			"code": 403,

@@ -154,7 +154,7 @@ func (a *Aws) CreateEc2Wl(SubId string, Ami string, Name string, DiskSize int64)
 		Resources: []*string{runRt.Instances[0].InstanceId},
 		Tags: []*ec2.Tag{
 			{
-				Key:   aws.String("Username"),
+				Key:   aws.String("Email"),
 				Value: aws.String(Name),
 			},
 		},

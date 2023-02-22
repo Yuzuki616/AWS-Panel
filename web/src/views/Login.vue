@@ -9,10 +9,10 @@
             <v-col cols="5">
               <v-form ref="loginForm">
                 <v-text-field
-                    v-model="username"
-                    :rules="usernameRules"
-                    label="用户名"
-                    name="username"
+                    v-model="email"
+                    :rules="emailRules"
+                    label="邮箱"
+                    name="email"
                     prepend-inner-icon="mdi-account-outline"
                     required
                     type="text"
@@ -71,10 +71,10 @@ export default {
     return {
       text: "登陆失败！",
       snackbar: false,
-      username: "",
-      usernameRules: [
-        v => !!v || "用户名为必填项",
-        v => /^[a-zA-Z0-9_-]{4,8}$/.test(v) || "用户名无效"
+      email: "",
+      emailRules: [
+        v => !!v || "邮箱为必填项",
+        v => /^[a-zA-Z0-9_-]{4,8}$/.test(v) || "邮箱无效"
       ],
       password: "",
       passwordRules: [v => !!v || "密码为必填项"],
@@ -86,7 +86,7 @@ export default {
       if (this.$refs.loginForm.validate()) {
         this.loading = true
         let data = new FormData()
-        data.append("username", this.username)
+        data.append("email", this.email)
         data.append("password", this.password)
         axios.post("/api/v1/User/Login",
             data, {withCredentials: true}).then((response) => {

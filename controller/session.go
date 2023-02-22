@@ -7,12 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func addLoginSession(c *gin.Context, username string) error {
+func addLoginSession(c *gin.Context, email string) error {
 	sessionId := utils.GenRandomString(16)
 	if _, e := cache.Get(sessionId); e {
-		return addLoginSession(c, username)
+		return addLoginSession(c, email)
 	}
-	cache.Set(sessionId, username, 0)
+	cache.Set(sessionId, email, 0)
 	s := sessions.Default(c)
 	s.Set("loginSession", sessionId)
 	saveErr := s.Save()
